@@ -1,0 +1,46 @@
+{
+  "name": "jgis",
+  "version": "1.0.0",
+  "description": "快速创建二维、三维工具库",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./2d": {
+      "import": "./dist/2d/index.mjs",
+      "require": "./dist/2d/index.js",
+      "types": "./dist/2d/index.d.ts"
+    },
+    "./3d": {
+      "import": "./dist/3d/index.mjs",
+      "require": "./dist/3d/index.js",
+      "types": "./dist/3d/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Guidozijef/jgis.git"
+  },
+  "keywords": [
+    "gis",
+    "openlayers",
+    "cesium",
+    "typeScript"
+  ],
+  "author": "zhangjianfeng",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Guidozijef/jgis/issues"
+  },
+  "homepage": "https://github.com/Guidozijef/jgis#readme",
+  "dependencies": {
+    "cesium": "^1.136.0",
+    "ol": "^10.7.0"
+  }
+}
