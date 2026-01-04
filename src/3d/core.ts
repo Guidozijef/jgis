@@ -1,4 +1,4 @@
-import * as Cesium from 'cesium'
+import * as Cesium from "cesium";
 
 /**
  * 创建Viewer
@@ -6,20 +6,19 @@ import * as Cesium from 'cesium'
  * @param {String} [divStr] Cesium.viewer对应的DOM元素名：<div id="cesiumContainer"></div>
  * @param {String} [terrainUrl] 地形链接
  */
-export async function CreateViewer(el: HTMLElement, terrainUrl) {
-  let _terrainProvider
+export async function CreateViewer(el: HTMLElement, terrainUrl?: string) {
+  let _terrainProvider;
   if (Cesium.defined(terrainUrl)) {
     _terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(terrainUrl, {
       requestVertexNormals: true,
-      requestWaterMask: true
-    })
+      requestWaterMask: true,
+    });
   }
 
   if (!Cesium.defined(_terrainProvider)) {
-    _terrainProvider = new Cesium.EllipsoidTerrainProvider()
+    _terrainProvider = new Cesium.EllipsoidTerrainProvider();
   }
 
-  //viewer简单介绍：https://zhuanlan.zhihu.com/p/24702004
   const viewer = new Cesium.Viewer(el, {
     requestRenderMode: true, //减少应用程序的 CPU/GPU 使用率
     maximumRenderTimeChange: Infinity, //默认时间变化请求一个新帧
@@ -38,13 +37,13 @@ export async function CreateViewer(el: HTMLElement, terrainUrl) {
     terrainProvider: _terrainProvider,
     contextOptions: {
       webgl: {
-        preserveDrawingBuffer: true //允许截图
-      }
-    }
-  })
+        preserveDrawingBuffer: true, //允许截图
+      },
+    },
+  });
 
   //去除cesium版权信息
-  viewer._cesiumWidget._creditContainer.style.display = 'none'
+  viewer._cesiumWidget._creditContainer.style.display = "none";
 
-  return viewer
+  return viewer;
 }

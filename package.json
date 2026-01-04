@@ -2,10 +2,20 @@
   "name": "jgis",
   "version": "1.0.0",
   "description": "快速创建二维、三维工具库",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint:prettier": "prettier --write **/*.{js,ts,json,tsx,css,less,scss,vue,html,md}",
+    "eslint:fix": "eslint --fix",
+    "build": "vite build"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -42,5 +52,20 @@
   "dependencies": {
     "cesium": "^1.136.0",
     "ol": "^10.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^10.6.2",
+    "globals": "^17.0.0",
+    "jiti": "^2.6.1",
+    "prettier": "^3.7.4",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.51.0",
+    "vite": "^7.3.0",
+    "vite-plugin-dts": "^4.5.4"
   }
 }
