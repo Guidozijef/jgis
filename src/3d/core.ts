@@ -1,4 +1,5 @@
-import * as Cesium from "cesium";
+import * as Cesium from 'cesium'
+import { addTDTImageryProvider } from './baseMap'
 
 /**
  * 创建Viewer
@@ -6,17 +7,18 @@ import * as Cesium from "cesium";
  * @param {String} [divStr] Cesium.viewer对应的DOM元素名：<div id="cesiumContainer"></div>
  * @param {String} [terrainUrl] 地形链接
  */
-export async function CreateViewer(el: HTMLElement, terrainUrl?: string) {
-  let _terrainProvider;
+export function CreateViewer(el: HTMLElement, terrainUrl?: string) {
+  let _terrainProvider
   if (Cesium.defined(terrainUrl)) {
-    _terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(terrainUrl, {
-      requestVertexNormals: true,
-      requestWaterMask: true,
-    });
+    _terrainProvider = (async () =>
+      await Cesium.CesiumTerrainProvider.fromUrl(terrainUrl, {
+        requestVertexNormals: true,
+        requestWaterMask: true
+      }))()
   }
 
   if (!Cesium.defined(_terrainProvider)) {
-    _terrainProvider = new Cesium.EllipsoidTerrainProvider();
+    _terrainProvider = new Cesium.EllipsoidTerrainProvider()
   }
 
   const viewer = new Cesium.Viewer(el, {
@@ -37,13 +39,30 @@ export async function CreateViewer(el: HTMLElement, terrainUrl?: string) {
     terrainProvider: _terrainProvider,
     contextOptions: {
       webgl: {
-        preserveDrawingBuffer: true, //允许截图
-      },
-    },
-  });
+        preserveDrawingBuffer: true //允许截图
+      }
+    }
+  })
 
   //去除cesium版权信息
-  viewer._cesiumWidget._creditContainer.style.display = "none";
+  viewer._cesiumWidget._creditContainer.style.display = 'none'
 
-  return viewer;
+  return viewer
+}
+
+/**
+ * 初始化地图
+ * @param {Cesium.Viewer} viewer
+ */
+
+export function createBaseLayer(viewer: Cesium.Viewer, options: any): void {
+  addTDTImageryProvider(viewer, options)
+}
+/**
+ * 添加标记
+ * @param {Cesium.Viewer} viewer
+ * @returns {void}
+ */
+export function addMarker(viewer: Cesium.Viewer, points: any[], markerOptions: any): void {
+  console.log('添加标记', viewer, points, markerOptions)
 }

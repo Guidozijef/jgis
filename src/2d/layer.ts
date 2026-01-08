@@ -1,1 +1,239 @@
 // 图层模块
+import { Point, LineString, MultiLineString, Circle as OLCircle, MultiPolygon, Polygon, Geometry } from 'ol/geom'
+import { Map } from 'ol'
+import { Tile as TileLayer, Vector as VectorLayer, VectorTile as VectorTileLayer } from 'ol/layer'
+import { circular } from 'ol/geom/Polygon'
+import Feature, { FeatureLike } from 'ol/Feature'
+import { Cluster, Vector as VectorSource, TileWMS, XYZ } from 'ol/source'
+import { GeoJSON } from 'ol/format'
+import Overlay from 'ol/Overlay'
+import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult } from './types'
+import type { StyleLike, StyleFunction } from 'ol/style/Style'
+import Style from 'ol/style/Style'
+import { circle as tCircle } from '@turf/turf'
+import { createSourceByWms, createSources } from './source'
+import { getLonLat } from './utils'
+import { FeatureType } from 'ol/format/WFS'
+import { generateStyle } from './style'
+import { removeLayerByName } from './utils'
+
+/**
+ *
+ * @param map  地图实例
+ * @param options 图层配置
+ * @returns {TileLayer} 图层实例
+ */
+export function createBaseLayer(map: Map, options: any = {}): TileLayer<XYZ> {
+  const TOKEN = options.token || 'dadcbbdb5206b626a29ca739686b3087'
+  const layer = new TileLayer({
+    className: 'tdt-base-layer',
+    source: new XYZ({
+      url: 'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=' + TOKEN,
+      maxZoom: options.maxZoom,
+      minZoom: options.minZoom
+    }),
+    zIndex: options.zIndex || 1
+  })
+  layer.set('name', 'tdt-base-layer')
+  map.addLayer(layer)
+  return layer
+}
+
+/**
+ * 创建图层
+ * @param map {Map} 地图
+ * @param layerName 图层名称
+ * @param data 数据
+ * @param options 配置项
+ * @returns 图层
+ */
+export function createLayer(map: Map, layerName: string, data: any, options: LayerOptions): any {
+  const type = options.type || 'Point'
+  let layer
+  switch (type) {
+    case 'GeoJSON':
+      layer = createJSONLayer(layerName, data, map, options)
+      break
+    case 'Wms':
+      layer = createWmsLayer(layerName, map, options)
+      break
+    case 'Point':
+    case 'LineString':
+    case 'MultiLineString':
+    case 'Polygon':
+    case 'MultiPolygon':
+      layer = createVectorLayer(layerName, data, map, options)
+      break
+    case 'Circle':
+      layer = createBufferCircle(layerName, data, map, options)
+      break
+    case 'Overlay':
+      layer = createOverlayLayer(layerName, data, map, options)
+      break
+  }
+  return layer
+}
+
+/**
+ * 移除图层
+ * @param map 地图实例
+ * @param layerName 图层名称
+ * @returns void
+ */
+export function removeLayer(map: Map, layerName: string | string[]): void {
+  if (Array.isArray(layerName)) {
+    layerName.forEach((name) => {
+      removeLayerByName(map, name)
+    })
+  } else {
+    removeLayerByName(map, layerName)
+  }
+}
+
+/**
+ * 根据GEOJSON数据创建图层
+ * @param layerName 图层名称
+ * @param geoJson GeoJson数据
+ * @param Map 地图实例
+ * @param options 图层配置
+ * @returns {VectorLayer} 矢量图层
+ */
+export function createJSONLayer(
+  layerName: string,
+  geoJson: GeoJsonLike,
+  Map: MapInstance,
+  options: LayerOptions
+): VectorLayer<FeatureLike> {
+  console.log(typeof geoJson, geoJson) // 检查类型和内容
+  const features = new GeoJSON().readFeatures(geoJson, {
+    dataProjection: 'EPSG:4326',
+    featureProjection: 'EPSG:4326' // 或 'EPSG:3857'，看你的地图
+  })
+  const source = new VectorSource()
+  source.addFeatures(features)
+  const layer = new VectorLayer({
+    source,
+    style: generateStyle(layerName, options),
+    zIndex: options.zIndex || 10
+  })
+  layer.set('name', layerName)
+  layer.set('type', 'webgl')
+  Map.addLayer(layer)
+  return layer
+}
+
+/**
+ * 根据WMS服务创建图层
+ * @param layerName 图层名称
+ * @param Map 地图实例
+ * @param options 图层配置
+ * @returns {TileLayer} 矢量图层
+ */
+export function createWmsLayer(layerName: string, Map: MapInstance, options: LayerOptions): TileLayer<TileWMS> {
+  const layer = new TileLayer<TileWMS>({
+    opacity: options.opacity || 1,
+    source: createSourceByWms(layerName, options),
+    zIndex: options.zIndex || 10
+  })
+  layer.set('name', layerName)
+  Map.addLayer(layer)
+  return layer
+}
+
+/**
+ * 根据数据创建矢量图层
+ * @param layerName 图层名称
+ * @param data 图层数据
+ * @param Map 地图实例
+ * @param options 图层配置
+ * @returns {TileLayer} 矢量图层
+ */
+export function createVectorLayer(
+  layerName: string,
+  data: any[],
+  Map: MapInstance,
+  options: LayerOptions
+): VectorLayer<FeatureLike> {
+  if (!data || data.length === 0) return null
+  const layer = new VectorLayer({
+    source: createSources(layerName, data, options),
+    style: generateStyle(layerName, options),
+    zIndex: options.zIndex || 10
+  })
+  layer.set('name', layerName)
+  layer.set('type', 'webgl')
+  Map.addLayer(layer)
+  return layer
+}
+
+/**
+ * 根据数据创建矢量图层
+ * @param layerName 图层名称
+ * @param data 图层数据
+ * @param Map 地图实例
+ * @param options 图层配置
+ * @returns {TileLayer} 矢量图层
+ */
+export function createBufferCircle(
+  layerName: string,
+  data: any,
+  Map: MapInstance,
+  options: LayerOptions
+): VectorLayer<FeatureLike> {
+  const coordinate = getLonLat(data)
+  const circleFeature = tCircle(coordinate, options.radius, { steps: 300, units: 'meters' })
+
+  const turfCircleFeatureNorth = new GeoJSON().readFeature(circleFeature, {
+    dataProjection: 'EPSG:4326',
+    featureProjection: 'EPSG:4490'
+  })
+  // const circle = circular(coordinate, options.radius, 300, 6375137);
+  // const c = getCenter(circle.getExtent());
+  // const r = getWidth(circle.getExtent()) / 2;
+  // const geometry = new OLCircle(c, r);
+  // const circleFeature = new Feature({
+  //   geometry: geometry,
+  //   name: 'buff',
+  //   data: { ...data, layerName },
+  // });
+  const source = new VectorSource({ wrapX: false })
+  source.addFeature(turfCircleFeatureNorth as Feature<Geometry>)
+  const layer = new VectorLayer({
+    source: source,
+    style: generateStyle(layerName, options),
+    zIndex: options.zIndex ? options.zIndex : 10
+  })
+  layer.set('name', layerName)
+  layer.set('type', 'webgl')
+  Map.addLayer(layer)
+  return layer
+}
+
+export function createOverlayLayer(
+  layerName: string,
+  data: any,
+  Map: MapInstance,
+  options: LayerOptions
+): OverlayResult {
+  const div = document.createElement('div')
+  const overlay = new Overlay({
+    element: div,
+    stopEvent: false,
+    positioning: options.positioning || 'bottom-center'
+  })
+  overlay.set('name', layerName)
+  overlay.set('type', 'webgl')
+  Map.addOverlay(overlay)
+  return { overlayer: overlay, content: div }
+}
+
+export function createBlankLayer(layerName: string, options: LayerOptions): VectorLayer<FeatureLike> {
+  const layer = new VectorLayer({
+    source: new VectorSource({ wrapX: false }),
+    zIndex: options.zIndex ? options.zIndex : 10,
+    style: generateStyle(layerName, options)
+  })
+  layer.set('name', layerName)
+  layer.set('type', 'webgl')
+  return layer
+}

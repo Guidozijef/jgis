@@ -50,8 +50,9 @@
   },
   "homepage": "https://github.com/Guidozijef/jgis#readme",
   "dependencies": {
+    "@turf/turf": "^7.3.1",
     "cesium": "^1.136.0",
-    "ol": "^10.7.0"
+    "ol": "^9.2.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

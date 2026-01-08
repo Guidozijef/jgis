@@ -1,0 +1,96 @@
+import { Point, LineString, MultiLineString, Circle as OLCircle, MultiPolygon, Polygon, Geometry } from 'ol/geom'
+import Feature from 'ol/Feature'
+import { Cluster, Vector as VectorSource, TileWMS } from 'ol/source'
+import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult } from './types'
+import { getLonLat } from './utils'
+
+/**
+ * 创建数据源
+ * @param layerName 图层名称
+ * @param data 数据
+ * @param options 配置项
+ * @returns 数据源
+ */
+export function createSources(layerName: string, data: any[], options: LayerOptions): VectorSource {
+  const features: Feature<Geometry>[] = []
+  let geometry: Geometry | undefined
+  const type = options.type || 'Point'
+  data.forEach((item) => {
+    switch (type) {
+      case 'Point':
+        geometry = createPoint(item)
+        break
+      case 'LineString':
+        geometry = createLineString(item)
+        break
+      case 'MultiLineString':
+        geometry = createMultiLineString(item)
+        break
+      case 'MultiPolygon':
+        geometry = createMultiPolygon(item)
+        break
+      case 'Polygon':
+        geometry = createPolygon(item)
+        break
+    }
+    if (!geometry) return
+    const feature: Feature<Geometry> = new Feature({
+      geometry: geometry,
+      data: { ...item, layerName }
+    })
+    features.push(feature)
+  })
+
+  const vectorSource = new VectorSource()
+  if (features.length > 0) {
+    vectorSource.addFeatures(features)
+  }
+  return vectorSource
+}
+
+/**
+ * 创建WMS数据源
+ * @param data 数据
+ * @param options 配置项
+ * @returns TileWMS数据源
+ */
+export function createSourceByWms(data: any, options: LayerOptions): TileWMS {
+  if (options.cqlFilter) {
+    if (options.cqlFilter) {
+      options.CQL_FILTER += ` and ${options.cqlFilter}`
+    } else {
+      options.CQL_FILTER = options.cqlFilter
+    }
+  }
+  return new TileWMS({
+    url: options.url,
+    params: {
+      LAYERS: options.LAYERS,
+      CQL_FILTER: options.CQL_FILTER
+    },
+    serverType: 'geoserver'
+  })
+}
+
+function createPoint(data: any): Point | undefined {
+  const lonLat = getLonLat(data)
+  if (lonLat) {
+    return new Point(lonLat)
+  }
+}
+
+function createLineString(data: any): LineString {
+  return new LineString(data.coordinates)
+}
+
+function createMultiLineString(data: any): MultiLineString {
+  return new MultiLineString(data.coordinates)
+}
+
+function createMultiPolygon(data: any): MultiPolygon {
+  return new MultiPolygon(data.coordinates)
+}
+
+function createPolygon(data: any): Polygon {
+  return new Polygon(data.coordinates)
+}

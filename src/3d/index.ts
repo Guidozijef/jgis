@@ -1,14 +1,13 @@
-import { CreateViewer } from "./core";
+import { CreateViewer, createBaseLayer, addMarker } from './core'
 
-export function useMap3D(el, options) {
+export function useMap(el: HTMLElement, options: any) {
   // TODO 创建3D地图
 
-  const viewer = CreateViewer(el);
+  const viewer = CreateViewer(el)
+  createBaseLayer(viewer, options)
 
   return {
     instance: viewer,
-    addMarker: (marker) => {
-      console.log("添加3D标记", marker);
-    },
-  };
+    addMarker: (points: any[], markerOptions: any) => addMarker(viewer, points, markerOptions)
+  }
 }
