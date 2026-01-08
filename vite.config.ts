@@ -41,11 +41,11 @@ export default defineConfig({
     rollupOptions: {
       // 外部化依赖：非常重要！
       // 确保 openlayers 和 cesium 不会被打包进你的库中，减小体积
-      external: ['ol', 'cesium'],
+      external: ['ol', /^ol\/.*/, 'cesium'],
       output: {
         // 在 UMD 构建模式下为这些外部依赖提供全局变量（如果需要）
         globals: {
-          ol: 'Ol',
+          ol: 'ol',
           cesium: 'Cesium'
         },
         // 保持目录结构（可选，如果你的文件很多）
