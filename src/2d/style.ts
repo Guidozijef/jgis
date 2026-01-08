@@ -17,7 +17,7 @@ function generatePointsStyle() {
   const styleFn = (feature, resolution) => {
     return new Style({
       image: new CircleStyle({
-        radius: 10,
+        radius: 5,
         fill: new Fill({ color: 'red' })
       })
     })
