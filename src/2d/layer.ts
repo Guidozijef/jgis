@@ -103,7 +103,7 @@ export function createJSONLayer(
   geoJson: GeoJsonLike,
   Map: MapInstance,
   options: LayerOptions
-): VectorLayer<FeatureLike> {
+): VectorLayer {
   console.log(typeof geoJson, geoJson) // 检查类型和内容
   const features = new GeoJSON().readFeatures(geoJson, {
     dataProjection: 'EPSG:4326',
@@ -153,7 +153,7 @@ export function createVectorLayer(
   data: any[],
   Map: MapInstance,
   options: LayerOptions
-): VectorLayer<FeatureLike> {
+): VectorLayer {
   if (!data || data.length === 0) return null
   const layer = new VectorLayer({
     source: createSources(layerName, data, options),
@@ -174,12 +174,7 @@ export function createVectorLayer(
  * @param options 图层配置
  * @returns {TileLayer} 矢量图层
  */
-export function createBufferCircle(
-  layerName: string,
-  data: any,
-  Map: MapInstance,
-  options: LayerOptions
-): VectorLayer<FeatureLike> {
+export function createBufferCircle(layerName: string, data: any, Map: MapInstance, options: LayerOptions): VectorLayer {
   const coordinate = getLonLat(data)
   const circleFeature = tCircle(coordinate, options.radius, { steps: 300, units: 'meters' })
 
@@ -227,7 +222,7 @@ export function createOverlayLayer(
   return { overlayer: overlay, content: div }
 }
 
-export function createBlankLayer(layerName: string, options: LayerOptions): VectorLayer<FeatureLike> {
+export function createBlankLayer(layerName: string, options: LayerOptions): VectorLayer {
   const layer = new VectorLayer({
     source: new VectorSource({ wrapX: false }),
     zIndex: options.zIndex ? options.zIndex : 10,

@@ -13,7 +13,7 @@ export function createMap(el, options = {}): Map {
     zoom: 10,
     center: [104.064839, 30.548857],
     minZoom: 2,
-    maxZoom: 20,
+    maxZoom: 19,
     projection: 'EPSG:4326'
   }
   const mapOptions = Object.assign(defaultOptions, options)
@@ -49,11 +49,11 @@ export function addMarker(map: Map, layerName: string, data: any, options?: Laye
 
 /**
  * 定位
- * @param lon 经度
- * @param lat 纬度
- * @param zoom 缩放级别
+ * @param map 地图实例
+ * @param coordinate [经度, 纬度]
+ * @param options {flyOptions} 配置项
  */
-export function flyToMap(map: Map, coordinate: [number, number], options?: flyOptions): Promise<Boolean> {
+export function flyTo(map: Map, coordinate: [number, number], options?: flyOptions): Promise<Boolean> {
   return new Promise((resolve, reject) => {
     map.getView().animate(
       {
@@ -70,26 +70,25 @@ export function flyToMap(map: Map, coordinate: [number, number], options?: flyOp
 
 /**
  * 通过当前框定位
- * @param extent 当前框范围
- * @param zoom 地图层级
+ * @param map 地图实例
+ * @param options {flyOptions} 配置项
  * @returns 经纬度
  */
-export function flyToMapByExtent(map: Map, options: flyOptions) {
+export function flyToByExtent(map: Map, options: flyOptions): Promise<Boolean> {
   const lon = (options.extend[0] + options.extend[2]) / 2
   const lat = (options.extend[1] + options.extend[3]) / 2
-  flyToMap(map, [lon, lat], options)
-  return [lon, lat]
+  return flyTo(map, [lon, lat], options)
 }
 
 /**
- * 定位
+ * 根据要素定位
  * @param map 地图实例
  * @param feature 要素
- * @param zoom 缩放级别
+ * @param options {flyOptions} 配置项
  */
-export function flyToMapByFeature(map: Map, feature: Feature, options: flyOptions) {
+export function flyToByFeature(map: Map, feature: Feature, options: flyOptions): Promise<Boolean> {
   const extend = feature.getGeometry().getExtent()
-  flyToMapByExtent(map, { ...options, extend })
+  return flyToByExtent(map, { ...options, extend })
 }
 
 /**

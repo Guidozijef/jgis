@@ -36,8 +36,9 @@ export function createSources(layerName: string, data: any[], options: LayerOpti
     if (!geometry) return
     const feature: Feature<Geometry> = new Feature({
       geometry: geometry,
-      data: { ...item, layerName }
+      data: item
     })
+    feature.set('layerName', layerName)
     features.push(feature)
   })
 
@@ -68,7 +69,8 @@ export function createSourceByWms(data: any, options: LayerOptions): TileWMS {
       LAYERS: options.LAYERS,
       CQL_FILTER: options.CQL_FILTER
     },
-    serverType: 'geoserver'
+    serverType: 'geoserver',
+    crossOrigin: 'anonymous'
   })
 }
 
