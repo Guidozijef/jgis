@@ -48,6 +48,9 @@ export function createBaseLayer(map: Map, options: any = {}): TileLayer<XYZ> {
  * @returns 图层
  */
 export function createLayer(map: Map, layerName: string, data: any, options: LayerOptions): any {
+  if (!options || !options.type) {
+    options = Object.assign({}, data, options)
+  }
   const type = options.type || 'Point'
   let layer
   switch (type) {

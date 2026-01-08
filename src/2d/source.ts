@@ -66,7 +66,7 @@ export function createSourceByWms(data: any, options: LayerOptions): TileWMS {
   return new TileWMS({
     url: options.url,
     params: {
-      LAYERS: options.LAYERS,
+      LAYERS: options.layers,
       CQL_FILTER: options.CQL_FILTER
     },
     serverType: 'geoserver',
