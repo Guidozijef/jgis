@@ -5,21 +5,22 @@ import { StyleLike } from 'ol/style/Style'
 import { Layer } from 'ol/layer'
 import type { FeatureLike } from 'ol/Feature'
 import Style from 'ol/style/Style'
+import { HoverOptions, SelectOptions, UseHoverResult, UseSelectResult } from './interaction'
 
-export interface JGisConfig {
-  // 这里可以根据实际需要扩展
-  [key: string]: any
+export interface BaseLayerOptions {
+  token?: string
+  maxZoom?: number
+  minZoom?: number
+  zIndex?: number
 }
 
-export interface MoveEventOptions {
-  isTips?: boolean
-  style?: StyleLike
-  callback: (params: FeatureCallbackParams) => void
-}
-
-export interface ClickEventOptions {
-  style?: StyleLike
-  callback: (params: FeatureCallbackParams) => void
+export interface mapConfigOptions {
+  projection?: string
+  center?: number[]
+  zoom?: number
+  minZoom?: number
+  maxZoom?: number
+  baseLayers: BaseLayerOptions
 }
 
 export interface FeatureCallbackParams {
@@ -52,16 +53,10 @@ export interface LayerOptions {
 export interface HighLightOptions {
   style?: StyleLike
   getStyle: (layerName: string, feature: Feature) => StyleLike
-  flashTime?: number
+  time?: number
 }
 
 export interface FlashOptions extends HighLightOptions {}
-
-export interface JGisInitOptions {
-  moveEvent?: MoveEventOptions
-  clickEvent?: ClickEventOptions
-  [key: string]: any
-}
 
 export type MapLike = any // 可根据实际情况细化
 export type MapInstance = Map // 可根据实际情况细化
@@ -81,19 +76,21 @@ export interface flyOptions {
   easing?: (t: number) => number
 }
 
-export interface JGisInstance {
-  init: (options: JGisInitOptions) => void
-  createLayer: (layerName: string, data: any[], options: LayerOptions) => any
-  getLayerByName: (layerName: string) => any
-  removeLayer: (layerName: string | string[]) => void
-  createBlankLayer: (layerName: string, options?: any) => any
-  getSourceByName: (layerName: string) => any
-  highLightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag?: boolean) => void
-  flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
-  queryFeatures: (layerName: string, properties: any) => FeatureLike | undefined
-  getLonLat: (data: any) => [Number, Number]
-  getZoom: () => number | undefined
-  zoomToFeature: (feature: FeatureLike, zoom?: number) => void
-  centerToMap: (lon: number, lat: number, zoom?: number) => void
-  destroy: () => void
+export interface MapContext {
+  targetId: string
+  instance: MapInstance
+  addMarker: (layerName: string, data: any, options?: LayerOptions) => void
+  createLayer: (layerName: string, data: any, options?: LayerOptions) => Layer
+  removeLayer: (layerName: string) => void
+  useSelect: (options: SelectOptions) => UseSelectResult
+  useHover: (options: HoverOptions) => UseHoverResult
+  flyTo: (coordinate: [number, number], options: flyOptions) => void
+  flyToByExtent: (options: flyOptions) => void
+  flyToByFeature: (feature: Feature, options: flyOptions) => void
+  getProjection: () => void
+  getZoom: () => number
+  setZoom: (zoom: number) => void
+  getMapContext: (id: string) => MapContext
+  onMapReady: (id: string, callback: () => void) => void
+  destroyMap: () => void
 }

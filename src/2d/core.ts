@@ -1,6 +1,7 @@
 import { Feature, Map, View } from 'ol'
 import { createLayer } from './layer'
-import { flyOptions, LayerOptions } from './types'
+import { flyOptions, LayerOptions, mapConfigOptions } from './types'
+import { registerMap, unregisterMap } from './store'
 
 /***
  * 创建地图
@@ -8,7 +9,14 @@ import { flyOptions, LayerOptions } from './types'
  * @param options 地图配置
  * @returns {Map}
  */
-export function createMap(el, options = {}): Map {
+export function createMap(el, options: any = {}): Map {
+  if (!el && !el.target) {
+    throw new Error('请传入地图容器')
+  }
+  if (arguments.length === 1 && typeof el === 'object') {
+    options = el
+    el = options.target
+  }
   const defaultOptions = {
     zoom: 10,
     center: [104.064839, 30.548857],
@@ -33,6 +41,7 @@ export function createMap(el, options = {}): Map {
       maxZoom: mapOptions.maxZoom
     })
   })
+  ;(map as any).targetId = el
   return map
 }
 
@@ -140,7 +149,8 @@ export function setZoom(map: Map, zoom: number) {
  * @param map 地图实例
  * 销毁绑定事件
  */
-export function destroyMap(map: Map): void {
+export function destroyMap(map: Map, targetId: string): void {
   map.un('click', () => {})
   map.un('pointermove', () => {})
+  unregisterMap(targetId)
 }

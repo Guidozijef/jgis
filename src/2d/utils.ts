@@ -7,17 +7,19 @@ import { TileWMS, ImageWMS } from 'ol/source'
 import { customFeature, FlashOptions, HighLightOptions } from './types'
 import { boundingExtent } from 'ol/extent'
 
+type dataType = { lttd?: number; lgtd?: number } & { jd?: number; wd?: number } & {
+  latitude?: number
+  longitude?: number
+} & {
+  lon?: number
+  lat?: number
+}
 /**
  * 解析出数据中的经纬度
  * @param data 数据
  * @returns [经度, 纬度]
  */
-export function getLonLat(
-  data: { lttd?: number; lgtd?: number } & { jd?: number; wd?: number } & { latitude?: number; longitude?: number } & {
-    lon?: number
-    lat?: number
-  }
-): [number, number] {
+export function getLonLat(data: dataType): [number, number] {
   if (data.lttd && data.lgtd) {
     return [Number(data.lgtd), Number(data.lttd)]
   } else if (data.jd && data.wd) {
@@ -53,33 +55,13 @@ export function removeLayerByName(map: Map, layerName: string) {
 }
 
 /**
- * 根据图层名称获取图层
- * @param map 地图实例
- * @param layerName 图层名称
- */
-export function getLayerByName(map: Map, layerName: string): any {
-  const layers = map.getAllLayers()
-  const layer = layers.find((item) => item.get('name') === layerName)
-  return layer
-}
-/**
- * 根据图层名称获取图层数据源
- * @param map 地图实例
- * @param layerName 图层名称
- */
-export function getSourceByName(map: Map, layerName: string): any {
-  const layer = getLayerByName(map, layerName)
-  return layer?.getSource()
-}
-
-/**
  * 高亮要素
  * @param layerName 图层名称
  * @param feature 要素
  * @param options 配置
  * @param zoomFlag 是否高亮 默认false
  */
-export function highLightFeature(
+export function lightFeature(
   layerName: string,
   feature: FeatureLike,
   options: HighLightOptions,
@@ -101,12 +83,11 @@ export function highLightFeature(
  */
 export function flashFeature(layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) {
   if (!feature) return
-  const flashInterval = options.flashTime || 300 // 300ms闪烁一次
+  const flashInterval = options.time || 300 // 300ms闪烁一次
   let lastFlashTime = Date.now()
   let flashOn = false
   let timer = 0
   feature.running = true
-  const that = this
   function animate() {
     if (!feature.running) return
     const now = Date.now()
@@ -114,7 +95,7 @@ export function flashFeature(layerName: string, feature: FeatureLike & customFea
     if (elapsed >= flashInterval) {
       flashOn = !flashOn
       lastFlashTime = now
-      that.highLightFeature(layerName, feature, options, flashOn)
+      lightFeature(layerName, feature, options, flashOn)
       ;(feature as Feature<Geometry>).changed()
     }
     timer = requestAnimationFrame(animate)

@@ -10,15 +10,17 @@ import {
   getZoom,
   destroyMap
 } from './core'
+import { registerMap, onMapReady, getMapContext } from './store'
 import { createBaseLayer, createLayer, removeLayer } from './layer'
 import { useSelect, SelectOptions, UseSelectResult, useHover, HoverOptions, UseHoverResult } from './interaction'
-import { flyOptions, LayerOptions } from './types'
+import { flyOptions, LayerOptions, mapConfigOptions, MapContext } from './types'
 
-export const useMap = (el: HTMLElement, config: any = {}) => {
+export const useMap = (el: string, config: mapConfigOptions) => {
   const map = createMap(el, config)
-  createBaseLayer(map, config)
+  createBaseLayer(map, config.baseLayers)
 
-  return {
+  const context: MapContext = {
+    targetId: el,
     instance: map, // 暴露原始实例以备不时之需
     addMarker: (layerName: string, data: any, options?: LayerOptions) => addMarker(map, layerName, data, options),
     createLayer: (layerName: string, data: any, options?: LayerOptions) => createLayer(map, layerName, data, options),
@@ -31,6 +33,12 @@ export const useMap = (el: HTMLElement, config: any = {}) => {
     getProjection: () => getProjection(map),
     getZoom: () => getZoom(map),
     setZoom: (zoom: number) => setZoom(map, zoom),
-    destroyMap: () => destroyMap(map)
+    getMapContext: (id: string): MapContext => getMapContext(id),
+    onMapReady: (id: string, callback: () => void) => onMapReady(id, callback),
+    destroyMap: () => destroyMap(map, el)
   }
+
+  registerMap(el, context)
+
+  return context
 }

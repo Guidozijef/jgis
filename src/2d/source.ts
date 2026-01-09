@@ -3,6 +3,8 @@ import Feature from 'ol/Feature'
 import { Cluster, Vector as VectorSource, TileWMS } from 'ol/source'
 import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult } from './types'
 import { getLonLat } from './utils'
+import { getLayerByName } from './layer'
+import { Map } from 'ol'
 
 /**
  * 创建数据源
@@ -72,6 +74,16 @@ export function createSourceByWms(data: any, options: LayerOptions): TileWMS {
     serverType: 'geoserver',
     crossOrigin: 'anonymous'
   })
+}
+
+/**
+ * 根据图层名称获取图层数据源
+ * @param map 地图实例
+ * @param layerName 图层名称
+ */
+export function getSourceByName(map: Map, layerName: string): any {
+  const layer = getLayerByName(map, layerName)
+  return layer?.getSource()
 }
 
 function createPoint(data: any): Point | undefined {

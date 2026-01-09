@@ -1,7 +1,7 @@
 // 图层模块
 import { Point, LineString, MultiLineString, Circle as OLCircle, MultiPolygon, Polygon, Geometry } from 'ol/geom'
 import { Map } from 'ol'
-import { Tile as TileLayer, Vector as VectorLayer, VectorTile as VectorTileLayer } from 'ol/layer'
+import { Layer, Tile as TileLayer, Vector as VectorLayer, VectorTile as VectorTileLayer } from 'ol/layer'
 import { circular } from 'ol/geom/Polygon'
 import Feature, { FeatureLike } from 'ol/Feature'
 import { Cluster, Vector as VectorSource, TileWMS, XYZ } from 'ol/source'
@@ -16,21 +16,22 @@ import { getLonLat } from './utils'
 import { FeatureType } from 'ol/format/WFS'
 import { generateStyle } from './style'
 import { removeLayerByName } from './utils'
+import { BaseLayerOptions } from './types'
 
 /**
- *
+ * 创建底图
  * @param map  地图实例
  * @param options 图层配置
  * @returns {TileLayer} 图层实例
  */
-export function createBaseLayer(map: Map, options: any = {}): TileLayer<XYZ> {
+export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileLayer<XYZ> {
   const TOKEN = options.token || 'dadcbbdb5206b626a29ca739686b3087'
   const layer = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
       url: 'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=' + TOKEN,
-      maxZoom: options.maxZoom,
-      minZoom: options.minZoom
+      maxZoom: options.maxZoom || 18,
+      minZoom: options.minZoom || 2
     }),
     zIndex: options.zIndex || 1
   })
@@ -47,7 +48,7 @@ export function createBaseLayer(map: Map, options: any = {}): TileLayer<XYZ> {
  * @param options 配置项
  * @returns 图层
  */
-export function createLayer(map: Map, layerName: string, data: any, options: LayerOptions): any {
+export function createLayer(map: Map, layerName: string, data: any, options: LayerOptions): Layer {
   if (!options || !options.type) {
     options = Object.assign({}, data, options)
   }
@@ -233,5 +234,16 @@ export function createBlankLayer(layerName: string, options: LayerOptions): Vect
   })
   layer.set('name', layerName)
   layer.set('type', 'webgl')
+  return layer
+}
+
+/**
+ * 根据图层名称获取图层
+ * @param map 地图实例
+ * @param layerName 图层名称
+ */
+export function getLayerByName(map: Map, layerName: string): any {
+  const layers = map.getAllLayers()
+  const layer = layers.find((item) => item.get('name') === layerName)
   return layer
 }
