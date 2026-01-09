@@ -32,7 +32,7 @@ export interface FeatureCallbackParams {
 }
 
 export interface LayerOptions {
-  type:
+  type?:
     | 'GeoJSON'
     | 'Wms'
     | 'Point'
@@ -92,5 +92,5 @@ export interface MapContext {
   setZoom: (zoom: number) => void
   getMapContext: (id: string) => MapContext
   onMapReady: (id: string, callback: () => void) => void
-  destroyMap: () => void
+  destroyMap: (id: string) => void
 }

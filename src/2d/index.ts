@@ -10,7 +10,7 @@ import {
   getZoom,
   destroyMap
 } from './core'
-import { registerMap, onMapReady, getMapContext } from './store'
+import { registerMap, onMapReady as onMapReadyed, getMapContext as getMapContexted } from './store'
 import { createBaseLayer, createLayer, removeLayer } from './layer'
 import { useSelect, SelectOptions, UseSelectResult, useHover, HoverOptions, UseHoverResult } from './interaction'
 import { flyOptions, LayerOptions, mapConfigOptions, MapContext } from './types'
@@ -33,12 +33,30 @@ export const useMap = (el: string, config: mapConfigOptions) => {
     getProjection: () => getProjection(map),
     getZoom: () => getZoom(map),
     setZoom: (zoom: number) => setZoom(map, zoom),
-    getMapContext: (id: string): MapContext => getMapContext(id),
-    onMapReady: (id: string, callback: () => void) => onMapReady(id, callback),
+    getMapContext: (id: string): MapContext => getMapContexted(id),
+    onMapReady: (id: string, callback: (MapContext) => void) => onMapReadyed(id, callback),
     destroyMap: () => destroyMap(map, el)
   }
 
   registerMap(el, context)
 
   return context
+}
+
+/**
+ * 保证能获取到方法
+ * @param id
+ * @param callback
+ */
+export function onMapReady(id: string, callback: (MapContext) => void) {
+  onMapReadyed(id, callback)
+}
+
+/**
+ * 获取地图返回的上下文
+ * @param id
+ * @returns MapContext
+ */
+export function getMapContext(id: string): MapContext {
+  return getMapContexted(id)
 }
