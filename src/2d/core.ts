@@ -62,7 +62,7 @@ export function addMarker(map: Map, layerName: string, data: any, options?: Laye
  * @param coordinate [经度, 纬度]
  * @param options {flyOptions} 配置项
  */
-export function flyTo(map: Map, coordinate: [number, number], options?: flyOptions): Promise<Boolean> {
+export function flyTo(map: Map, coordinate: [number, number], options?: flyOptions): Promise<boolean> {
   return new Promise((resolve, reject) => {
     map.getView().animate(
       {
@@ -83,7 +83,7 @@ export function flyTo(map: Map, coordinate: [number, number], options?: flyOptio
  * @param options {flyOptions} 配置项
  * @returns 经纬度
  */
-export function flyToByExtent(map: Map, options: flyOptions): Promise<Boolean> {
+export function flyToByExtent(map: Map, options: flyOptions): Promise<boolean> {
   const lon = (options.extend[0] + options.extend[2]) / 2
   const lat = (options.extend[1] + options.extend[3]) / 2
   return flyTo(map, [lon, lat], options)
@@ -95,7 +95,7 @@ export function flyToByExtent(map: Map, options: flyOptions): Promise<Boolean> {
  * @param feature 要素
  * @param options {flyOptions} 配置项
  */
-export function flyToByFeature(map: Map, feature: Feature, options: flyOptions): Promise<Boolean> {
+export function flyToByFeature(map: Map, feature: Feature, options: flyOptions): Promise<boolean> {
   const extend = feature.getGeometry().getExtent()
   return flyToByExtent(map, { ...options, extend })
 }

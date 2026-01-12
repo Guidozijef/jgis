@@ -8,6 +8,8 @@ const mapRegistry = new Map<string, MapContext>()
 
 const readyCallbacks: Record<string, Function[]> = {}
 
+const contentCallbacks: Record<string, Function[]> = {}
+
 /**
  * 注册地图
  * @param id 地图容器的 ID (target)
@@ -25,18 +27,26 @@ export const registerMap = (id: string, context: MapContext) => {
     readyCallbacks[id].forEach((cb) => cb(context))
     delete readyCallbacks[id] // 清空队列
   }
+
+  if (contentCallbacks[id]) {
+    contentCallbacks[id].forEach((resolve) => resolve(context))
+    delete contentCallbacks[id] // 清空队列
+  }
 }
 /**
  * 获取已创建的地图上下文
  * @param id 地图容器的 ID (target)
  */
-export const getMapContext = (id: string): MapContext | undefined => {
+export function getMapContext(id: string): Promise<MapContext> {
   const context = mapRegistry.get(id)
   if (!context) {
     console.warn(`Map '${id}' not found. Make sure useMap() is called first.`)
-    return undefined
+    return new Promise((resolve) => {
+      contentCallbacks[id] = contentCallbacks[id] || []
+      contentCallbacks[id].push(resolve)
+    })
   }
-  return context
+  return Promise.resolve(context)
 }
 
 /**

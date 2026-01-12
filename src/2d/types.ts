@@ -90,7 +90,7 @@ export interface MapContext {
   getProjection: () => void
   getZoom: () => number
   setZoom: (zoom: number) => void
-  getMapContext: (id: string) => MapContext
+  getMapContext: (id: string) => Promise<MapContext>
   onMapReady: (id: string, callback: () => void) => void
   destroyMap: (id: string) => void
 }

@@ -27,14 +27,14 @@ export const useMap = (el: string, config: mapConfigOptions) => {
     removeLayer: (layerName: string) => removeLayer(map, layerName),
     useSelect: (options: SelectOptions): UseSelectResult => useSelect(map, options),
     useHover: (options: HoverOptions): UseHoverResult => useHover(map, options),
-    flyTo: (coordinate: [number, number], options: flyOptions) => flyTo(map, coordinate, options),
-    flyToByExtent: (options: flyOptions) => flyToByExtent(map, options),
-    flyToByFeature: (feature: Feature, options: flyOptions) => flyToByFeature(map, feature, options),
+    flyTo: (coordinate: [number, number], options: flyOptions): Promise<boolean> => flyTo(map, coordinate, options),
+    flyToByExtent: (options: flyOptions): Promise<boolean> => flyToByExtent(map, options),
+    flyToByFeature: (feature: Feature, options: flyOptions): Promise<boolean> => flyToByFeature(map, feature, options),
     getProjection: () => getProjection(map),
     getZoom: () => getZoom(map),
     setZoom: (zoom: number) => setZoom(map, zoom),
-    getMapContext: (id: string): MapContext => getMapContexted(id),
-    onMapReady: (id: string, callback: (MapContext) => void) => onMapReadyed(id, callback),
+    getMapContext: (id: string): Promise<MapContext> => getMapContexted(id),
+    onMapReady: (id: string, callback: (ctx: MapContext) => void) => onMapReadyed(id, callback),
     destroyMap: () => destroyMap(map, el)
   }
 
@@ -48,15 +48,15 @@ export const useMap = (el: string, config: mapConfigOptions) => {
  * @param id
  * @param callback
  */
-export function onMapReady(id: string, callback: (MapContext) => void) {
+export function onMapReady(id: string, callback: (ctx: MapContext) => void) {
   onMapReadyed(id, callback)
 }
 
 /**
  * 获取地图返回的上下文
  * @param id
- * @returns MapContext
+ * @returns Promise<MapContext>
  */
-export function getMapContext(id: string): MapContext {
+export function getMapContext(id: string): Promise<MapContext> {
   return getMapContexted(id)
 }
