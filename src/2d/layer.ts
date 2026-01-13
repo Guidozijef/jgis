@@ -26,17 +26,30 @@ import { BaseLayerOptions } from './types'
  */
 export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileLayer<XYZ> {
   const TOKEN = options.token || 'dadcbbdb5206b626a29ca739686b3087'
+  const baseType = options.baseType || 'img'
+  const noteType = options.noteType || 'cia'
   const layer = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
-      url: 'http://t0.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=' + TOKEN,
+      url: `http://t0.tianditu.com/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
     zIndex: options.zIndex || 1
   })
   layer.set('name', 'tdt-base-layer')
+  const layerNote = new TileLayer({
+    className: 'tdt-base-layer',
+    source: new XYZ({
+      url: `http://t0.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      maxZoom: options.maxZoom || 18,
+      minZoom: options.minZoom || 2
+    }),
+    zIndex: options.zIndex ? options.zIndex + 1 : 2
+  })
+  layerNote.set('name', 'tdt-baseNote-layer')
   map.addLayer(layer)
+  map.addLayer(layerNote)
   return layer
 }
 
