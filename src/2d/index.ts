@@ -15,6 +15,12 @@ import { createBaseLayer, createLayer, removeLayer } from './layer'
 import { useSelect, SelectOptions, UseSelectResult, useHover, HoverOptions, UseHoverResult } from './interaction'
 import { flyOptions, LayerOptions, mapConfigOptions, MapContext } from './types'
 
+/**
+ * 创建地图
+ * @param el 地图元素Id
+ * @param config 配置
+ * @returns 地图方法和地图实例
+ */
 export const useMap = (el: string, config: mapConfigOptions) => {
   const map = createMap(el, config)
   createBaseLayer(map, config.baseLayers)
