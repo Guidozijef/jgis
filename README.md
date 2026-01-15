@@ -24,6 +24,10 @@
     *   支持根据图层、属性动态渲染高亮样式，完全控制权交给用户。
 *   **🗺️ 二三维API风格一致**：
     *   二三维API风格一致，方便会一种框架的开发者快速理解和上手开发。
+*   **🗺️ 完全兼容openlayers/cesium**：
+    *   导出`instance`地图实例，可自己操作原生API。
+    *   如果有特殊需求，完全可以自己用原生实现，没有任何违和感。
+
 
 ---
 
@@ -60,7 +64,7 @@ import { useMap } from 'jgis/2d';
 
 onMounted(() => {
   // 初始化地图，会自动注册为全局激活实例
-  const { addMarker, createLayer } = useMap('map-container', {
+  const { instance, addMarker, createLayer } = useMap('map-container', {
     center: [116.4, 39.9],
     zoom: 10
   });
@@ -174,7 +178,7 @@ import { useMap } from 'jgis/3d';
 
 onMounted(() => {
   // 初始化地图，会自动注册为全局激活实例
-  const { flyTo, addMarker } = useMap('map-container', {
+  const { instance, flyTo, addMarker } = useMap('map-container', {
     center: [116.4, 39.9],
     zoom: 10
   });
