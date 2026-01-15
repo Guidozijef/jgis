@@ -60,7 +60,7 @@ import { useMap } from 'jgis/2d';
 
 onMounted(() => {
   // 初始化地图，会自动注册为全局激活实例
-  const { addMarker } = useMap('map-container', {
+  const { addMarker, createLayer } = useMap('map-container', {
     center: [116.4, 39.9],
     zoom: 10
   });
