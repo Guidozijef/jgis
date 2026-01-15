@@ -11,57 +11,46 @@ import * as Cesium from 'cesium'
  */
 export function addTDTImageryProvider(viewer, options) {
   const defaultOptions = {
-    img_w: true,
-    ibo_w: true,
-    cia_w: true,
+    baseType: 'img',
+    noteType: 'cia',
     token: 'dadcbbdb5206b626a29ca739686b3087'
   }
-  const { img_w, ibo_w, cia_w, token } = Object.assign(defaultOptions, options)
+  const { baseType, noteType, token } = Object.assign(defaultOptions, options)
   // const token = Cesium.defaultValue(tokenString, "dadcbbdb5206b626a29ca739686b3087");
   // 服务域名
-  const tdtUrl = 'https://t{s}.tianditu.gov.cn/'
+  const tdtUrl = 'https://t{s}.tianditu.gov.cn'
   // 服务负载子域
   const subdomains = ['0', '1', '2', '3', '4', '5', '6', '7']
   // 叠加影像服务
-  if (img_w) {
-    const imgMap = new Cesium.UrlTemplateImageryProvider({
-      url: tdtUrl + 'DataServer?T=img_w&x={x}&y={y}&l={z}&tk=' + token,
-      subdomains: subdomains,
-      tilingScheme: new Cesium.WebMercatorTilingScheme(),
-      maximumLevel: 18
-    })
-    let layer = viewer.imageryLayers.addImageryProvider(imgMap)
-    layer.gamma = 1
-  } else {
-    const imageryProviderOsm = new Cesium.UrlTemplateImageryProvider({
-      url: 'https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-      subdomains: ['a', 'b', 'c', 'd'],
-      tilingScheme: new Cesium.WebMercatorTilingScheme(),
-      maximumLevel: 18
-    })
-    viewer.imageryLayers.addImageryProvider(imageryProviderOsm)
-  }
+  const imgMap = new Cesium.UrlTemplateImageryProvider({
+    url: `${tdtUrl}/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${token}`,
+    subdomains: subdomains,
+    tilingScheme: new Cesium.WebMercatorTilingScheme()
+  })
+  let layer = viewer.imageryLayers.addImageryProvider(imgMap)
+  layer.gamma = 1
 
   // 叠加国界服务
-  if (ibo_w) {
-    const iboMap = new Cesium.UrlTemplateImageryProvider({
-      url: tdtUrl + 'DataServer?T=ibo_w&x={x}&y={y}&l={z}&tk=' + token,
-      subdomains: subdomains,
-      tilingScheme: new Cesium.WebMercatorTilingScheme(),
-      maximumLevel: 10
-    })
-    viewer.imageryLayers.addImageryProvider(iboMap)
-  }
+  const iboMap = new Cesium.UrlTemplateImageryProvider({
+    url: `${tdtUrl}/DataServer?T=ibo_w&x={x}&y={y}&l={z}&tk=${token}`,
+    subdomains: subdomains,
+    tilingScheme: new Cesium.WebMercatorTilingScheme()
+  })
+  viewer.imageryLayers.addImageryProvider(iboMap)
 
   //调用影像中文注记服务
-  if (cia_w) {
-    const cia = new Cesium.UrlTemplateImageryProvider({
-      url: tdtUrl + 'DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=' + token,
-      subdomains: subdomains,
-      tilingScheme: new Cesium.WebMercatorTilingScheme(),
-      maximumLevel: 18
-    })
+  const cia = new Cesium.UrlTemplateImageryProvider({
+    url: `${tdtUrl}/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${token}`,
+    subdomains: subdomains,
+    tilingScheme: new Cesium.WebMercatorTilingScheme()
+    // maximumLevel: 18
+  })
+  viewer.imageryLayers.addImageryProvider(cia) //添加到cesium图层上
 
-    viewer.imageryLayers.addImageryProvider(cia) //添加到cesium图层上
-  }
+  // const imageryProviderOsm = new Cesium.UrlTemplateImageryProvider({
+  //   url: 'https://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+  //   subdomains: ['a', 'b', 'c', 'd'],
+  //   tilingScheme: new Cesium.WebMercatorTilingScheme()
+  // })
+  // viewer.imageryLayers.addImageryProvider(imageryProviderOsm)
 }

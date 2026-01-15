@@ -2,7 +2,7 @@ module.exports = {
   // 在 HTML、Vue 和 JSX 中强制每行使用单个属性。
   singleAttributePerLine: false,
   // 一行最多多少个字符
-  printWidth: 120,
+  printWidth: 150,
   // 指定每个缩进级别的空格数
   tabWidth: 2,
   // 使用制表符而不是空格缩进行

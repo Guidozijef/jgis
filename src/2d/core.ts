@@ -2,6 +2,7 @@ import { Feature, Map, View } from 'ol'
 import { createLayer } from './layer'
 import { flyOptions, LayerOptions, mapConfigOptions } from './types'
 import { registerMap, unregisterMap } from './store'
+import { defaults as defaultControls } from 'ol/control'
 
 /***
  * 创建地图
@@ -11,7 +12,7 @@ import { registerMap, unregisterMap } from './store'
  */
 export function createMap(el, options: any = {}): Map {
   if (!el && !el.target) {
-    throw new Error('请传入地图容器')
+    throw new Error('is not a valid element')
   }
   if (arguments.length === 1 && typeof el === 'object') {
     options = el
@@ -39,6 +40,11 @@ export function createMap(el, options: any = {}): Map {
       zoom: mapOptions.zoom,
       minZoom: mapOptions.minZoom,
       maxZoom: mapOptions.maxZoom
+    }),
+    controls: defaultControls({
+      zoom: false,
+      rotate: false,
+      attribution: false
     })
   })
   ;(map as any).targetId = el

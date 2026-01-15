@@ -31,7 +31,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   const layer = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
-      url: `http://t0.tianditu.com/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      url: `http://t{s}.tianditu.com/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
@@ -41,7 +41,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   const layerNote = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
-      url: `http://t0.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      url: `http://t{s}.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
@@ -85,7 +85,7 @@ export function createLayer(map: Map, layerName: string, data: any, options: Lay
       layer = createBufferCircle(layerName, data, map, options)
       break
     case 'Overlay':
-      layer = createOverlayLayer(layerName, data, map, options)
+      layer = createOverlayLayer(layerName, map, options)
       break
   }
   return layer
@@ -221,12 +221,14 @@ export function createBufferCircle(layerName: string, data: any, Map: MapInstanc
   return layer
 }
 
-export function createOverlayLayer(
-  layerName: string,
-  data: any,
-  Map: MapInstance,
-  options: LayerOptions
-): OverlayResult {
+/**
+ * 创建Overlay图层
+ * @param layerName 图层名称
+ * @param Map 地图实例
+ * @param options 图层配置
+ * @returns OverlayResult
+ */
+export function createOverlayLayer(layerName: string, Map: MapInstance, options: LayerOptions): OverlayResult {
   const div = document.createElement('div')
   const overlay = new Overlay({
     element: div,
@@ -239,7 +241,13 @@ export function createOverlayLayer(
   return { overlayer: overlay, content: div }
 }
 
-export function createBlankLayer(layerName: string, options: LayerOptions): VectorLayer {
+/**
+ * 创建空白图层
+ * @param layerName 图层名
+ * @param options 配置项
+ * @returns VectorLayer
+ */
+export function createBlankLayer(map: Map, layerName: string, options: LayerOptions): VectorLayer {
   const layer = new VectorLayer({
     source: new VectorSource({ wrapX: false }),
     zIndex: options.zIndex ? options.zIndex : 10,
@@ -247,6 +255,7 @@ export function createBlankLayer(layerName: string, options: LayerOptions): Vect
   })
   layer.set('name', layerName)
   layer.set('type', 'webgl')
+  map.addLayer(layer)
   return layer
 }
 
@@ -258,5 +267,16 @@ export function createBlankLayer(layerName: string, options: LayerOptions): Vect
 export function getLayerByName(map: Map, layerName: string): any {
   const layers = map.getAllLayers()
   const layer = layers.find((item) => item.get('name') === layerName)
+  return layer
+}
+
+/**
+ * 根据图层名称获取图层
+ * @param map 地图实例
+ * @param layerName 图层名称
+ */
+export function visibleLayer(map: Map, layerName: string, visible: boolean): Layer {
+  const layer = getLayerByName(map, layerName)
+  layer.setVisible(visible)
   return layer
 }

@@ -40,7 +40,7 @@ export const registerMap = (id: string, context: MapContext) => {
 export function getMapContext(id: string): Promise<MapContext> {
   const context = mapRegistry.get(id)
   if (!context) {
-    console.warn(`Map '${id}' not found. Make sure useMap() is called first.`)
+    // console.warn(`Map '${id}' not found. Make sure useMap() is called first.`)
     return new Promise((resolve) => {
       contentCallbacks[id] = contentCallbacks[id] || []
       contentCallbacks[id].push(resolve)

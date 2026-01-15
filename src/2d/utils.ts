@@ -6,6 +6,7 @@ import { Geometry } from 'ol/geom'
 import { TileWMS, ImageWMS } from 'ol/source'
 import { customFeature, FlashOptions, HighLightOptions } from './types'
 import { boundingExtent } from 'ol/extent'
+import { getSourceByName } from './source'
 
 type dataType = { lttd?: number; lgtd?: number } & { jd?: number; wd?: number } & {
   latitude?: number
@@ -19,8 +20,11 @@ type dataType = { lttd?: number; lgtd?: number } & { jd?: number; wd?: number } 
  * @param data 数据
  * @returns [经度, 纬度]
  */
-export function getLonLat(data: dataType): [number, number] {
-  if (data.lttd && data.lgtd) {
+export function getLonLat(data: dataType, options?: { lonLabel: string; latLabel: string }): [number, number] {
+  if (typeof data !== 'object' || data === null) return null
+  if (options && options.lonLabel && options.latLabel) {
+    return [Number(data[options.lonLabel]), Number(data[options.latLabel])]
+  } else if (data.lttd && data.lgtd) {
     return [Number(data.lgtd), Number(data.lttd)]
   } else if (data.jd && data.wd) {
     return [Number(data.jd), Number(data.wd)]
@@ -28,9 +32,8 @@ export function getLonLat(data: dataType): [number, number] {
     return [Number(data.longitude), Number(data.latitude)]
   } else if (data.lon && data.lat) {
     return [Number(data.lon), Number(data.lat)]
-  } else {
-    return [0, 0]
   }
+  return null
 }
 
 /**
@@ -114,10 +117,10 @@ export function flashFeature(layerName: string, feature: FeatureLike & customFea
  * @param properties 数据
  * @returns Feature 要素
  */
-export function queryFeatures(layerName: string, properties: any): FeatureLike | undefined {
+export function queryFeature(map: Map, layerName: string, properties: any): FeatureLike {
   if (!properties) return
   let coordinate = getLonLat(properties)
-  const allFeatures = this.getLayerByName(layerName)?.getSource()?.getFeatures?.()
+  const allFeatures = getSourceByName(map, layerName)?.getFeatures?.()
   if (!allFeatures) return
   let clickedFeature = allFeatures.find(function (feature: FeatureLike) {
     const geom = feature.getGeometry()

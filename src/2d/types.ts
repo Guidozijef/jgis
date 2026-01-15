@@ -6,6 +6,7 @@ import { Layer } from 'ol/layer'
 import type { FeatureLike } from 'ol/Feature'
 import Style from 'ol/style/Style'
 import { HoverOptions, SelectOptions, UseHoverResult, UseSelectResult } from './interaction'
+import { Source } from 'ol/source'
 
 export interface BaseLayerOptions {
   token?: string
@@ -84,6 +85,14 @@ export interface MapContext {
   addMarker: (layerName: string, data: any, options?: LayerOptions) => void
   createLayer: (layerName: string, data: any, options?: LayerOptions) => Layer
   removeLayer: (layerName: string) => void
+  visibleLayer: (layerName: string, visible: boolean) => Layer
+  getLayerByName: (layerName: string) => Layer
+  getSourceByName: (layerName: string) => Source
+  getLonLat: (data: any) => [number, number]
+  createBlankLayer: (layerName: string, options: LayerOptions) => Layer
+  lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
+  flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
+  queryFeature: (layerName: string, properties: any) => FeatureLike
   useSelect: (options: SelectOptions) => UseSelectResult
   useHover: (options: HoverOptions) => UseHoverResult
   flyTo: (coordinate: [number, number], options: flyOptions) => void
