@@ -3,7 +3,7 @@ import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, setView, 
 import { useSelect } from './interaction'
 import { createBaseLayer, createLayer, getLayerByName } from './layer'
 import { Coordinates, flyOptions, LayerOptions, MapContext, UseSelectResult } from './types'
-import { getMapContext, onMapReady, registerMap } from './store'
+import { getMapContext as getMapContexted, onMapReady as onMapReadyed, registerMap } from './store'
 
 /**
  * 创建地图
@@ -29,12 +29,30 @@ export function useMap(el: string, options: any) {
     flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions): Promise<boolean> =>
       flyToBoundingSphere(viewer, boundingSphere, options),
     setView: (coordinate: Coordinates, options?: flyOptions): void => setView(viewer, coordinate, options),
-    getMapContext: (id: string): Promise<MapContext> => getMapContext(id),
-    onMapReady: (id: string, callback: () => void): void => onMapReady(id, callback),
+    getMapContext: (id: string): Promise<MapContext> => getMapContexted(id),
+    onMapReady: (id: string, callback: () => void): void => onMapReadyed(id, callback),
     destroyMap: (id: string): void => destroyMap(viewer, id)
   }
 
   registerMap(el, context)
 
   return context
+}
+
+/**
+ * 保证能获取到方法
+ * @param id
+ * @param callback
+ */
+export function onMapReady(id: string, callback: (ctx: MapContext) => void) {
+  onMapReadyed(id, callback)
+}
+
+/**
+ * 获取地图返回的上下文
+ * @param id
+ * @returns Promise<MapContext>
+ */
+export function getMapContext(id: string): Promise<MapContext> {
+  return getMapContexted(id)
 }

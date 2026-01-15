@@ -22,6 +22,8 @@
     *   **Unified Styling**：WMS 图层也能像 Vector 一样拥有动态高亮样式。
 *   **🎨 灵活的样式系统**：
     *   支持根据图层、属性动态渲染高亮样式，完全控制权交给用户。
+*   **🗺️ 二三维API风格一致**：
+    *   二三维API风格一致，方便会一种框架的开发者快速理解和上手开发。
 
 ---
 
@@ -38,6 +40,7 @@ npm install ol
 npm install cesium
 ```
 
+
 ---
 
 ## 🗺️ 快速开始 (2D)
@@ -53,15 +56,26 @@ npm install cesium
 <script setup>
 import { onMounted } from 'vue';
 import 'ol/ol.css'; // ⚠️ 别忘了引入 OpenLayers 样式
-import { createMap2D } from 'jgis/2d';
+import { useMap } from 'jgis/2d';
 
 onMounted(() => {
   // 初始化地图，会自动注册为全局激活实例
-  createMap2D({
-    target: 'map-container',
+  const { addMarker } = useMap('map-container', {
     center: [116.4, 39.9],
     zoom: 10
   });
+
+  addMarker('创建点位图层', [{ lon: 104.064839, lat: 30.548857 }], {
+    style: new Style({
+      image: new CircleStyle({
+        radius: 5,
+        fill: new Fill({ color: 'blue' })
+      })
+    })
+  })
+
+  createLayer('创建wms服务图层', { url: 'https://ahocevar.com/geoserver/wms', type: 'Wms', layers: 'topp:states' })
+
 });
 </script>
 ```
@@ -71,8 +85,7 @@ onMounted(() => {
 JGIS 的核心优势在于**同时处理 Vector 和 WMS 图层**，并提供统一的样式回调。
 
 ```javascript
-import { useSelect } from 'jgis/2d';
-import { Style, Stroke, Fill } from 'ol/style'; // 或从 jgis 导出
+const { useSelect } = useMap('map-container');
 
 // 假设你有两个图层：一个是本地 Vector，一个是 Geoserver WMS
 const vectorLayer = ...;
@@ -87,9 +100,9 @@ const select = useSelect({
   multi: false,
 
   // 自定义高亮样式 (支持函数或对象)
-  style: (feature) => {
+  style: (layerName, feature) => {
     // 自动识别数据来源
-    const layer = feature.get('_origin_layer'); // WMS 注入的标记
+    const layer = feature.get('wms_layer_source'); // WMS 注入的标记
     const type = feature.get('type');
     
     // 根据业务逻辑返回不同样式
@@ -120,25 +133,115 @@ select.onSelect((res) => {
 // select.destroy();
 ```
 
+
+### 3. 异步调用
+
+如果创建地图的`useMap`在一个文件，而选择交互在另一个文件，可以使用异步调用。在文件中使用`onMapReady`和`getMapContext`方法来获取地图方法，而不需要传递跟地图相关的任何参数，但是必须指定地图容器的 id。例如：
+
+```js
+import { onMapReady, getMapContext } from 'jgis/2d';
+
+// 'map-container' 是地图容器的 id
+onMapReady('map-container', ({ createLayer, flyTo }) => {
+  
+})
+
+
+getMapContext('map-container').then(({ createLayer, flyTo }) => {
+  
+})
+
+```
+
+
 ---
 
 ## 🌍 快速开始 (3D)
 
 三维模块完全隔离，不会污染二维项目。
 
-```javascript
-import { createMap3D, flyTo } from 'jgis/3d';
+### 1. 初始化地图
 
-// 初始化
-const viewer = createMap3D('cesium-container');
+```vue
+<template>
+  <!-- ⚠️ 注意：必须给容器设置高度，否则地图无法显示 -->
+  <div id="map-container" style="height: 100vh; width: 100%;"></div>
+</template>
 
-// 使用工具函数
-flyTo(viewer, {
-  lng: 116.4,
-  lat: 39.9,
-  height: 2000
+<script setup>
+import { onMounted } from 'vue';
+import { useMap } from 'jgis/3d';
+
+onMounted(() => {
+  // 初始化地图，会自动注册为全局激活实例
+  const { flyTo, addMarker } = useMap('map-container', {
+    center: [116.4, 39.9],
+    zoom: 10
+  });
+
+  addMarker(
+    '创建点位图层',
+    [
+      { lon: 104.397428, lat: 30.90923 },
+      { lon: 104.45343, lat: 30.83233 }
+    ],
+    {
+      style: (item) => new URL('./img.png', import.meta.url).href,
+      scale: 0.4,
+      // color: Cesium.Color.YELLOW,
+      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      scaleByDistance: new Cesium.NearFarScalar(1, 1, 100000, 0.2)
+    }
+  )
+
+ flyTo([104.397428, 30.90923, 10000], { duration: 1, pitch: -Math.PI / 2 })
+
 });
+</script>
 ```
+
+### 2. 使用交互功能 (Select / Hover)
+
+
+```javascript
+import { useMap } from 'jgis/3d';
+const { useSelect } = useMap('map-container');
+
+
+const { onSelect } = useSelect({
+  style: {
+    color: Cesium.Color.YELLOW,
+    scale: 0.5
+  }
+})
+
+onSelect((data) => {
+  console.log('获取的数据', data)
+})
+
+```
+
+
+
+### 3. 异步调用
+
+如果创建地图的`useMap`在一个文件，而选择交互在另一个文件，可以使用异步调用。在文件中使用`onMapReady`和`getMapContext`方法来获取地图方法，而不需要传递跟地图相关的任何参数，但是必须指定地图容器的 id。例如：
+
+```js
+import { onMapReady, getMapContext } from 'jgis/3d';
+
+// 'map-container' 是地图容器的 id
+onMapReady('map-container', ({ createLayer, flyTo }) => {
+  
+})
+
+
+getMapContext('map-container').then(({ createLayer, flyTo }) => {
+  
+})
+
+```
+
 
 ---
 
