@@ -1,12 +1,17 @@
 import * as Cesium from 'cesium'
 
-export function useSelect(viewer) {
+export function useSelect(viewer, options: any) {
   const callbacks = new Set<Function>()
   const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas)
+  let lastPickedPrimitive = null
 
   handler.setInputAction((movement) => {
     const pickedObject = viewer.scene.pick(movement.position)
-
+    if (lastPickedPrimitive) {
+      Object.assign(lastPickedPrimitive, lastPickedPrimitive._originStyle)
+      lastPickedPrimitive = null
+      viewer.scene.requestRender()
+    }
     if (Cesium.defined(pickedObject) && pickedObject.primitive instanceof Cesium.Billboard) {
       const billboard = pickedObject.primitive
       const data = {
@@ -15,7 +20,10 @@ export function useSelect(viewer) {
         event: movement,
         pick: pickedObject
       }
+      lastPickedPrimitive = billboard
       notify(data)
+      Object.assign(billboard, options.style || options.getStyle(billboard))
+      viewer.scene.requestRender()
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
 

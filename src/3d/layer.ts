@@ -78,6 +78,7 @@ export function createPointLayer(
       id: item.id || `point_${index}`
     }
     const b = billboards.add({ ...defaultOptions, ...options, ...customOptions })
+    b._originStyle = { ...defaultOptions, ...options, ...customOptions, color: Cesium.Color.WHITE }
     b.properties = item
   })
   // 要请求渲染 因为使用了配置 requestRenderMode: true 不然地图会不响应 要操作地图点位才会出现

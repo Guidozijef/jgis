@@ -7,6 +7,7 @@ import type { FeatureLike } from 'ol/Feature'
 import Style from 'ol/style/Style'
 import { HoverOptions, SelectOptions, UseHoverResult, UseSelectResult } from './interaction'
 import { Source } from 'ol/source'
+import { Projection } from 'ol/proj'
 
 export interface BaseLayerOptions {
   token?: string
@@ -35,16 +36,7 @@ export interface FeatureCallbackParams {
 }
 
 export interface LayerOptions {
-  type?:
-    | 'GeoJSON'
-    | 'Wms'
-    | 'Point'
-    | 'LineString'
-    | 'MultiLineString'
-    | 'Polygon'
-    | 'MultiPolygon'
-    | 'Circle'
-    | 'Overlay'
+  type?: 'GeoJSON' | 'Wms' | 'Point' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon' | 'Circle' | 'Overlay'
   token?: string
   style?: Style
   getStyle?: (layerName: string, feature: FeatureLike, resolution: number) => void | Style | Style[]
@@ -95,13 +87,13 @@ export interface MapContext {
   queryFeature: (layerName: string, properties: any) => FeatureLike
   useSelect: (options: SelectOptions) => UseSelectResult
   useHover: (options: HoverOptions) => UseHoverResult
-  flyTo: (coordinate: [number, number], options: flyOptions) => void
-  flyToByExtent: (options: flyOptions) => void
-  flyToByFeature: (feature: Feature, options: flyOptions) => void
-  getProjection: () => void
+  flyTo: (coordinate: [number, number], options: flyOptions) => Promise<boolean>
+  flyToByExtent: (options: flyOptions) => Promise<boolean>
+  flyToByFeature: (feature: Feature, options: flyOptions) => Promise<boolean>
+  getProjection: () => Projection
   getZoom: () => number
   setZoom: (zoom: number) => void
   getMapContext: (id: string) => Promise<MapContext>
-  onMapReady: (id: string, callback: () => void) => void
-  destroyMap: (id: string) => void
+  onMapReady: (id: string, callback: (ctx: MapContext) => void) => void
+  destroyMap: (map: MapInstance, id: string) => void
 }

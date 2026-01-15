@@ -1,6 +1,7 @@
 import * as Cesium from 'cesium'
-import { flyOptions } from './types'
+import { Coordinates, flyOptions } from './types'
 import { createLayer } from './layer'
+import { unregisterMap } from './store'
 
 /**
  * 创建Viewer
@@ -72,11 +73,7 @@ export function addMarker(viewer: Cesium.Viewer, layerName: string, points: any[
  * @param coordinate [经度, 纬度]
  * @param options {flyOptions} 配置项
  */
-export function flyTo(
-  viewer: Cesium.Viewer,
-  coordinate: [number, number, number],
-  options?: flyOptions
-): Promise<boolean> {
+export function flyTo(viewer: Cesium.Viewer, coordinate: Coordinates, options?: flyOptions): Promise<boolean> {
   return new Promise((resolve, reject) => {
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(...coordinate),
@@ -113,11 +110,7 @@ export function flyHome(viewer: Cesium.Viewer, duration: number = 1) {
  * @param boundingSphere
  * @param options 配置项
  */
-export function flyToBoundingSphere(
-  viewer: Cesium.Viewer,
-  boundingSphere: Cesium.BoundingSphere,
-  options: flyOptions
-): Promise<boolean> {
+export function flyToBoundingSphere(viewer: Cesium.Viewer, boundingSphere: Cesium.BoundingSphere, options: flyOptions): Promise<boolean> {
   return new Promise((resolve, reject) => {
     viewer.camera.flyToBoundingSphere(boundingSphere, {
       duration: options.duration || 1000, // 飞行动画时间（秒）
@@ -133,13 +126,14 @@ export function flyToBoundingSphere(
     })
   })
 }
+
 /**
  * 设置视角
  * @param viewer 视图对象
  * @param coordinate [经度, 纬度, 高度]
  * @param options 配置项
  */
-export function setView(viewer: Cesium.Viewer, coordinate: [number, number, number], options: flyOptions) {
+export function setView(viewer: Cesium.Viewer, coordinate: Coordinates, options: flyOptions) {
   viewer.camera.setView({
     destination: Cesium.Cartesian3.fromDegrees(...coordinate),
     orientation: {
@@ -148,4 +142,14 @@ export function setView(viewer: Cesium.Viewer, coordinate: [number, number, numb
       roll: options.roll || 0
     }
   })
+}
+
+/**
+ * 销毁地图
+ * @param viewer 视图对象
+ * @param id 地图id
+ */
+export function destroyMap(viewer: Cesium.Viewer, id: string) {
+  viewer.destroy()
+  unregisterMap(id)
 }

@@ -31,7 +31,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   const layer = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
-      url: `http://t{s}.tianditu.com/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      url: `http://t0.tianditu.com/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
@@ -41,7 +41,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   const layerNote = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
-      url: `http://t{s}.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      url: `http://t0.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
@@ -115,12 +115,7 @@ export function removeLayer(map: Map, layerName: string | string[]): void {
  * @param options 图层配置
  * @returns {VectorLayer} 矢量图层
  */
-export function createJSONLayer(
-  layerName: string,
-  geoJson: GeoJsonLike,
-  Map: MapInstance,
-  options: LayerOptions
-): VectorLayer {
+export function createJSONLayer(layerName: string, geoJson: GeoJsonLike, Map: MapInstance, options: LayerOptions): VectorLayer {
   console.log(typeof geoJson, geoJson) // 检查类型和内容
   const features = new GeoJSON().readFeatures(geoJson, {
     dataProjection: 'EPSG:4326',
@@ -165,12 +160,7 @@ export function createWmsLayer(layerName: string, Map: MapInstance, options: Lay
  * @param options 图层配置
  * @returns {TileLayer} 矢量图层
  */
-export function createVectorLayer(
-  layerName: string,
-  data: any[],
-  Map: MapInstance,
-  options: LayerOptions
-): VectorLayer {
+export function createVectorLayer(layerName: string, data: any[], Map: MapInstance, options: LayerOptions): VectorLayer {
   if (!data || data.length === 0) return null
   const layer = new VectorLayer({
     source: createSources(layerName, data, options),
