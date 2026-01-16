@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium'
 import { addTDTImageryProvider } from './baseMap'
-import { LayerOptions } from './types'
+import { WmsOptions, ILineOptions, optionsMap } from './types'
 import { getLonLat } from '../index'
 
 /**
@@ -20,20 +20,24 @@ export function createBaseLayer(viewer: Cesium.Viewer, options: any): void {
  * @param options 配置项
  * @returns 图层
  */
-export function createLayer(viewer: Cesium.Viewer, layerName: string, data: any, options: any) {
+export function createLayer<K extends keyof optionsMap>(viewer: Cesium.Viewer, layerName: string, data: any, options: optionsMap[K] & { type?: K }) {
   if (!options || !options.type) {
     options = Object.assign({}, data, options)
   }
-  const type = options.type || 'Point'
+  const type: K = options.type || 'Point'
   let layer
   switch (type) {
     case 'Point':
       layer = createPointLayer(viewer, layerName, data, options)
       break
+    case 'MultiLineString':
     case 'LineString':
       layer = createLineLayer(viewer, layerName, data, options)
       break
-    case 'MultiLineString':
+    case 'Wms':
+      data = data || options
+      layer = createWmsLayer(viewer, layerName, data as optionsMap[K])
+      break
     case 'Polygon':
     case 'MultiPolygon':
       //   layer = createVectorLayer(layerName, data, map, options)
@@ -55,14 +59,9 @@ export function createLayer(viewer: Cesium.Viewer, layerName: string, data: any,
  * @param data 数据
  * @param options 配置项
  */
-export function createPointLayer(
-  viewer: Cesium.Viewer,
-  layerName: string,
-  data: any[],
-  options: Cesium.Billboard.ConstructorOptions & { style?: any; getStyle?: (item: any) => any }
-) {
-  const billboards = viewer.scene.primitives.add(new Cesium.BillboardCollection())
-  billboards._layerName = layerName
+export function createPointLayer(viewer: Cesium.Viewer, layerName: string, data: any[], options: optionsMap['Point']): Cesium.BillboardCollection {
+  const primitive = viewer.scene.primitives.add(new Cesium.BillboardCollection())
+  primitive._layerName = layerName
 
   data.forEach((item, index) => {
     const defaultOptions = {
@@ -74,19 +73,27 @@ export function createPointLayer(
     }
     const customOptions = {
       position: Cesium.Cartesian3.fromDegrees(...getLonLat(item), 1),
-      image: options.style || options.getStyle(item),
+      image: options.image || options.getImage(item),
       id: item.id || `point_${index}`
     }
-    const b = billboards.add({ ...defaultOptions, ...options, ...customOptions })
+    const b = primitive.add({ ...defaultOptions, ...options, ...customOptions })
     b._originStyle = { ...defaultOptions, ...options, ...customOptions, color: Cesium.Color.WHITE }
     b.properties = item
   })
   // 要请求渲染 因为使用了配置 requestRenderMode: true 不然地图会不响应 要操作地图点位才会出现
   viewer.scene.requestRender()
-  return billboards
+  return primitive
 }
 
-export function createLineLayer(viewer: any, layerName: string, data: any[], options: any) {
+/**
+ * 创建线图层
+ * @param viewer 视图
+ * @param layerName 图层名称
+ * @param data 数据
+ * @param options 配置项
+ * @returns {Cesium.GroundPolylinePrimitive}
+ */
+export function createLineLayer(viewer: any, layerName: string, data: any[], options: optionsMap['LineString']): Cesium.GroundPolylinePrimitive {
   if (data.length < 2) return
   const geometryInstances = createPolylineGeometry(data, options)
 
@@ -102,9 +109,10 @@ export function createLineLayer(viewer: any, layerName: string, data: any[], opt
 
   ;(primitive as any)._layerName = layerName
   viewer.scene.groundPrimitives.add(primitive)
+  return primitive
 }
 
-function createPolylineGeometry(data: any[], options: any) {
+function createPolylineGeometry(data: any[], options: ILineOptions) {
   const geometryInstances = []
 
   const positions = data.map((item) => Cesium.Cartesian3.fromDegrees(...getLonLat(item), 0))
@@ -126,7 +134,53 @@ function createPolylineGeometry(data: any[], options: any) {
   return geometryInstances
 }
 
-export function getLayerByName(viewer, layerName) {
+/**
+ * 创建wms图层
+ * @param viewer 视图
+ * @param layerName 图层名称
+ * @param options 配置项
+ * @returns {Cesium.ImageryLayer}
+ */
+export function createWmsLayer(viewer: Cesium.Viewer, layerName: string, options: WmsOptions): Cesium.ImageryLayer {
+  const imageryProvider = new Cesium.WebMapServiceImageryProvider({
+    url: options.url,
+    layers: options.layers,
+    parameters: {
+      service: 'WMS',
+      version: '1.1.1',
+      request: 'GetMap',
+      transparent: true,
+      format: 'image/png'
+    }
+  })
+  ;(imageryProvider as any)._layerName = layerName
+  const layer = viewer.imageryLayers.addImageryProvider(imageryProvider)
+  layer.alpha = options.alpha || 0.5
+  layer.brightness = options.brightness || 1.0
+  layer.contrast = options.contrast || 1.0
+  layer.gamma = options.gamma || 0.0
+  return layer
+}
+
+/**
+ * 创建空白图层
+ * @param viewer 视图
+ * @param layerName 图层名称
+ * @returns {Cesium.DataSource}
+ */
+export function createBlankLayer(viewer: Cesium.Viewer, layerName: string): Cesium.Primitive {
+  const primitive = viewer.scene.primitives.add(new Cesium.BillboardCollection())
+  primitive._layerName = layerName
+  return primitive
+}
+
+/**
+ * 根据图层名获取图层
+ * @param viewer 视图
+ * @param layerName 图层名
+ * @returns {Primitive} 图层
+ */
+export function getLayerByName(viewer: Cesium.Viewer, layerName: string): Cesium.Primitive {
   const primitives = viewer.scene.primitives
   const length = primitives.length
 
@@ -138,4 +192,33 @@ export function getLayerByName(viewer, layerName) {
     }
   }
   return null
+}
+
+/**
+ * 删除图层
+ * @param viewer 视图
+ * @param layerName 图层名
+ */
+export function removeLayer(viewer, layerName) {
+  const layer = getLayerByName(viewer, layerName)
+  if (layer) {
+    viewer.scene.primitives.remove(layer)
+  } else {
+    console.warn('Layer not found:', layerName)
+  }
+}
+
+/**
+ * 隐藏图层
+ * @param {Cesium.Viewer} viewer 视图
+ * @param {string} layerName 图层名
+ * @param {boolean} visible 图层名
+ */
+export function visibleLayer(viewer: Cesium.Viewer, layerName: string, visible: boolean) {
+  const layer = getLayerByName(viewer, layerName)
+  if (layer) {
+    layer.show = visible
+  } else {
+    console.warn('Primitive not found:', layerName)
+  }
 }

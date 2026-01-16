@@ -1,5 +1,5 @@
 import * as Cesium from 'cesium'
-import { Coordinates, flyOptions } from './types'
+import { billboardOptions, Coordinates, flyOptions, optionsMap } from './types'
 import { createLayer } from './layer'
 import { unregisterMap } from './store'
 
@@ -25,10 +25,10 @@ export function createViewer(el: string, options: any = {}) {
     infoBox: false, //点击要素之后显示的信息,默认true
     fullscreenButton: false, //全屏按钮,默认显示true
     shouldAnimate: true, // Enable animations
-    // terrainProvider: _terrainProvider, //地形
     contextOptions: {
       webgl: {
-        preserveDrawingBuffer: true //允许截图
+        preserveDrawingBuffer: true, //允许截图
+        alpha: true //允许透明
       }
     }
   })
@@ -63,8 +63,8 @@ export function createViewer(el: string, options: any = {}) {
  * @param points 数据
  * @returns {void}
  */
-export function addMarker(viewer: Cesium.Viewer, layerName: string, points: any[], options: any): void {
-  createLayer(viewer, layerName, points, { ...options, type: 'Point' })
+export function addMarker(viewer: Cesium.Viewer, layerName: string, points: any[], options: optionsMap['Point']): void {
+  createLayer<'Point'>(viewer, layerName, points, { ...options, type: 'Point' })
 }
 
 /**

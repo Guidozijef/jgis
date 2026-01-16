@@ -1,4 +1,5 @@
 import * as Cesium from 'cesium'
+import { HoverOptions, SelectOptions, UseHoverResult, UseSelectResult } from './interaction'
 export interface flyOptions {
   heading?: number
   pitch?: number
@@ -25,44 +26,56 @@ export interface LayerOptions {
   interactive?: boolean
 }
 
-export interface SelectResult {
-  billboard: Cesium.Billboard
-  properties: any
-  event: Cesium.Cartesian2
-  pick: any
+export interface WmsOptions {
+  url: string
+  layers?: string
+  alpha?: number
+  brightness?: number
+  gamma?: number
+  contrast?: number
 }
 
-export interface UseSelectResult {
-  onSelect: (result: (SelectResult) => void) => void
-  clear: () => void
-  destroy: () => void
+export type ILineOptions = {
+  width: number
+  color: string
+  material: Cesium.Material
+  granularity: number
 }
+
+export interface optionsMap {
+  Point: billboardOptions & { getImage?: Function }
+  LineString: ILineOptions
+  MultiLineString: ILineOptions
+  Polygon: any
+  MultiPolygon: any
+  Circle: any
+  Wms: WmsOptions
+  Overlay: any
+}
+
+export type billboardOptions = Omit<Cesium.Billboard.ConstructorOptions, 'position'>
 
 export type Coordinates = [number, number, number]
 
 export interface MapContext {
   targetId: string
   instance: Cesium.Viewer
-  addMarker: (layerName: string, data: any, options?: LayerOptions) => void
-  createLayer: (layerName: string, data: any, options?: LayerOptions) => Layer
+  addMarker: (layerName: string, data: any, options?: optionsMap['Point']) => void
+  createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
   removeLayer: (layerName: string) => void
-  visibleLayer: (layerName: string, visible: boolean) => Layer
-  getLayerByName: (layerName: string) => Layer
-  getSourceByName: (layerName: string) => Source
-  getLonLat: (data: any) => [number, number]
-  createBlankLayer: (layerName: string, options: LayerOptions) => Layer
-  lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
-  flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
-  queryFeature: (layerName: string, properties: any) => FeatureLike
-  useSelect: (options: any) => UseSelectResult
-  useHover: (options: HoverOptions) => UseHoverResult
+  visibleLayer: (layerName: string, visible: boolean) => void
+  getLayerByName: (layerName: string) => Cesium.Primitive
+  createBlankLayer: (layerName: string, options: LayerOptions) => Cesium.Primitive
+  // lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
+  // flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
+  // queryFeature: (layerName: string, properties: any) => FeatureLike
+  createSelect: (options: SelectOptions) => UseSelectResult
+  createHover: (options: HoverOptions) => UseHoverResult
   flyTo: (coordinate: Coordinates, options: flyOptions) => Promise<boolean>
   flyHome: (duration?: number) => void
   flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions) => Promise<boolean>
-  getProjection: () => void
-  getZoom: () => number
   setView: (coordinate: Coordinates, options?: flyOptions) => void
   getMapContext: (id: string) => Promise<MapContext>
-  onMapReady: (id: string, callback: () => void) => void
+  onMapReady: (id: string, callback: (cxt: MapContext) => void) => void
   destroyMap: (id: string) => void
 }

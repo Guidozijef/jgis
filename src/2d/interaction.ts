@@ -42,7 +42,7 @@ export interface UseHoverResult {
 
 let selectInteraction: Select | null = null
 
-export function useSelect(map: Map, options: SelectOptions = {}): UseSelectResult {
+export function createSelect(map: Map, options: SelectOptions = {}): UseSelectResult {
   const geoJSONFormat = new GeoJSON()
 
   // 1. 创建原生的 Select 交互
@@ -214,7 +214,7 @@ export interface HoverEvent {
   coordinate: [number, number]
 }
 
-export function useHover(map: Map, options: HoverOptions = {}) {
+export function createHover(map: Map, options: HoverOptions = {}) {
   const geoJSONFormat = new GeoJSON()
   const debounceTime = options.debounceTime ?? 200
 

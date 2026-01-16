@@ -1,8 +1,8 @@
 import * as Cesium from 'cesium'
 import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, setView, destroyMap } from './core'
-import { useSelect } from './interaction'
-import { createBaseLayer, createLayer, getLayerByName } from './layer'
-import { Coordinates, flyOptions, LayerOptions, MapContext, UseSelectResult } from './types'
+import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
+import { createBaseLayer, createBlankLayer, createLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
+import { billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext } from './types'
 import { getMapContext as getMapContexted, onMapReady as onMapReadyed, registerMap } from './store'
 
 /**
@@ -20,17 +20,22 @@ export function useMap(el: string, options: any) {
   const context: MapContext = {
     targetId: el,
     instance: viewer,
-    addMarker: (layerName: string, points: any[], options: any) => addMarker(viewer, layerName, points, options),
+    addMarker: (layerName: string, points: any[], options: billboardOptions & { getImage?: Function }) =>
+      addMarker(viewer, layerName, points, options),
     createLayer: (layerName: string, data: any, options?: LayerOptions) => createLayer(viewer, layerName, data, options),
+    removeLayer: (layerName: string) => removeLayer(viewer, layerName),
+    visibleLayer: (layerName: string, visible: boolean) => visibleLayer(viewer, layerName, visible),
     getLayerByName: (layerName: string) => getLayerByName(viewer, layerName),
-    useSelect: (options: any): UseSelectResult => useSelect(viewer, options),
+    createBlankLayer: (layerName: string): Cesium.Primitive => createBlankLayer(viewer, layerName),
+    createSelect: (options: SelectOptions): UseSelectResult => createSelect(viewer, options),
+    createHover: (options: HoverOptions): UseHoverResult => createHover(viewer, options),
     flyTo: (coordinate: Coordinates, options?: flyOptions): Promise<boolean> => flyTo(viewer, coordinate, options),
     flyHome: (duration?: number): void => flyHome(viewer, duration),
     flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions): Promise<boolean> =>
       flyToBoundingSphere(viewer, boundingSphere, options),
     setView: (coordinate: Coordinates, options?: flyOptions): void => setView(viewer, coordinate, options),
     getMapContext: (id: string): Promise<MapContext> => getMapContexted(id),
-    onMapReady: (id: string, callback: () => void): void => onMapReadyed(id, callback),
+    onMapReady: (id: string, callback: (cxt: MapContext) => void): void => onMapReadyed(id, callback),
     destroyMap: (id: string): void => destroyMap(viewer, id)
   }
 

@@ -1,28 +1,10 @@
 import { Feature } from 'ol'
-import {
-  createMap,
-  addMarker,
-  flyTo,
-  flyToByExtent,
-  flyToByFeature,
-  getProjection,
-  setZoom,
-  getZoom,
-  destroyMap
-} from './core'
+import { createMap, addMarker, flyTo, flyToByExtent, flyToByFeature, getProjection, setZoom, getZoom, destroyMap } from './core'
 import { registerMap, onMapReady as onMapReadyed, getMapContext as getMapContexted } from './store'
 import { createBaseLayer, createLayer, removeLayer, createBlankLayer, getLayerByName, visibleLayer } from './layer'
 import { getSourceByName } from './source'
-import { useSelect, SelectOptions, UseSelectResult, useHover, HoverOptions, UseHoverResult } from './interaction'
-import {
-  customFeature,
-  FlashOptions,
-  flyOptions,
-  HighLightOptions,
-  LayerOptions,
-  mapConfigOptions,
-  MapContext
-} from './types'
+import { createSelect, SelectOptions, UseSelectResult, createHover, HoverOptions, UseHoverResult } from './interaction'
+import { customFeature, FlashOptions, flyOptions, HighLightOptions, LayerOptions, mapConfigOptions, MapContext } from './types'
 import { FeatureLike } from 'ol/Feature'
 import { getLonLat, queryFeature, lightFeature, flashFeature } from './utils'
 
@@ -47,13 +29,12 @@ export const useMap = (el: string, config: mapConfigOptions) => {
     getLonLat: (data: any) => getLonLat(data),
     getLayerByName: (layerName: string) => getLayerByName(map, layerName),
     getSourceByName: (layerName: string) => getSourceByName(map, layerName),
-    useSelect: (options: SelectOptions): UseSelectResult => useSelect(map, options),
-    useHover: (options: HoverOptions): UseHoverResult => useHover(map, options),
+    createSelect: (options: SelectOptions): UseSelectResult => createSelect(map, options),
+    createHover: (options: HoverOptions): UseHoverResult => createHover(map, options),
     queryFeature: (layerName: string, properties: any): FeatureLike => queryFeature(map, layerName, properties),
     lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) =>
       lightFeature(layerName, feature, options, zoomFlag),
-    flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) =>
-      flashFeature(layerName, feature, options),
+    flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => flashFeature(layerName, feature, options),
     flyTo: (coordinate: [number, number], options: flyOptions): Promise<boolean> => flyTo(map, coordinate, options),
     flyToByExtent: (options: flyOptions): Promise<boolean> => flyToByExtent(map, options),
     flyToByFeature: (feature: Feature, options: flyOptions): Promise<boolean> => flyToByFeature(map, feature, options),

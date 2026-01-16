@@ -89,14 +89,14 @@ onMounted(() => {
 JGIS 的核心优势在于**同时处理 Vector 和 WMS 图层**，并提供统一的样式回调。
 
 ```javascript
-const { useSelect } = useMap('map-container');
+const { createSelect, createHover } = useMap('map-container');
 
 // 假设你有两个图层：一个是本地 Vector，一个是 Geoserver WMS
 const vectorLayer = ...;
 const wmsLayer = ...;
 
 // 开启选择交互 (无需传入 map 实例)
-const select = useSelect({
+const select = createSelect({
   // 监听这些图层 (不传则监听所有)
   layers: [vectorLayer, wmsLayer],
   
@@ -111,7 +111,7 @@ const select = useSelect({
     
     // 根据业务逻辑返回不同样式
     if (layer === wmsLayer) {
-       return new Style({ 
+       return new Style({
          stroke: new Stroke({ color: 'red', width: 3 }),
          fill: new Fill({ color: 'rgba(255,0,0,0.1)' })
        });
@@ -132,6 +132,32 @@ select.onSelect((res) => {
     console.log('取消选中');
   }
 });
+
+
+// 监听回调
+select.onSelect((res) => {
+  if (res && res.length > 0) {
+    // res 是一个数组，包含 feature, layer 和 properties
+    const item = res[0];
+    console.log('选中要素属性:', item.properties);
+    console.log('所属图层:', item.layer);
+  } else {
+    console.log('取消选中');
+  }
+});
+
+const { onHover } = createHover({
+  style: new Style({
+    stroke: new Stroke({ color: 'blue', width: 3 }),
+    fill: new Fill({ color: 'rgba(0,0,255,0.1)' })
+  })
+})
+
+onHover(data => {
+  console.log('鼠标悬浮获取的数据：', data);
+})
+
+
 
 // 页面销毁时可调用
 // select.destroy();
@@ -190,7 +216,7 @@ onMounted(() => {
       { lon: 104.45343, lat: 30.83233 }
     ],
     {
-      style: (item) => new URL('./img.png', import.meta.url).href,
+      getImage: (item) => new URL('./img.png', import.meta.url).href,
       scale: 0.4,
       // color: Cesium.Color.YELLOW,
       disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -209,10 +235,10 @@ onMounted(() => {
 
 ```javascript
 import { useMap } from 'jgis/3d';
-const { useSelect } = useMap('map-container');
+const { createSelect, createHover } = useMap('map-container');
 
-
-const { onSelect } = useSelect({
+// click事件
+const { onSelect } = createSelect({
   style: {
     color: Cesium.Color.YELLOW,
     scale: 0.5
@@ -220,7 +246,20 @@ const { onSelect } = useSelect({
 })
 
 onSelect((data) => {
-  console.log('获取的数据', data)
+  console.log('onSelect获取的数据', data)
+})
+
+
+// hover事件
+const { onHover } = createHover({
+  style: {
+    color: Cesium.Color.YELLOW,
+    scale: 0.5
+  }
+})
+
+onHover((data) => {
+  console.log('onHover获取的数据', data)
 })
 
 ```
