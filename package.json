@@ -1,6 +1,6 @@
 {
   "name": "jgis",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "快速创建二维、三维工具库",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
