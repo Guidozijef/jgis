@@ -107,7 +107,8 @@ export function createHover(viewer: Cesium.Viewer, options: HoverOptions): UseHo
 
   handler.setInputAction((movement) => {
     const pickedObject = viewer.scene.pick(movement.endPosition)
-    if (lastPickedPrimitive) {
+    // TODO: 没选中才恢复样式
+    if (lastPickedPrimitive && !lastPickedPrimitive.isSelected) {
       Object.assign(lastPickedPrimitive, lastPickedPrimitive._originStyle)
       lastPickedPrimitive = null
       viewer.scene.requestRender()
