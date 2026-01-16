@@ -7,6 +7,7 @@ export interface SelectResult {
   properties: any
   event: Cesium.Cartesian2
   pick: any
+  layerName: string
 }
 
 export interface UseSelectResult {
@@ -44,9 +45,10 @@ export function createSelect(viewer: Cesium.Viewer, options: SelectOptions): Use
       primitive.isSelected = true
       const data: SelectResult = {
         primitive: primitive,
-        properties: primitive.properties,
+        properties: primitive._properties,
         event: movement,
-        pick: pickedObject
+        pick: pickedObject,
+        layerName: primitive._layerName
       }
       lastPickedPrimitive = primitive
       notify(data)
@@ -76,6 +78,7 @@ export interface HoverEvent {
   properties: any
   event: Cesium.Cartesian2
   pick: any
+  layerName: string
 }
 
 export interface HoverOptions {
@@ -117,9 +120,10 @@ export function createHover(viewer: Cesium.Viewer, options: HoverOptions): UseHo
       const primitive = pickedObject.primitive
       const data: HoverEvent = {
         primitive: primitive,
-        properties: primitive.properties,
+        properties: primitive._properties,
         event: movement,
-        pick: pickedObject
+        pick: pickedObject,
+        layerName: primitive._layerName
       }
       notifyThrottle(data)
       lastPickedPrimitive = primitive

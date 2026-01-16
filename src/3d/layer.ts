@@ -78,7 +78,8 @@ export function createPointLayer(viewer: Cesium.Viewer, layerName: string, data:
     }
     const b = primitive.add({ ...defaultOptions, ...options, ...customOptions })
     b._originStyle = { ...defaultOptions, ...options, ...customOptions, color: Cesium.Color.WHITE }
-    b.properties = item
+    b._properties = item
+    b._layerName = layerName
   })
   // 要请求渲染 因为使用了配置 requestRenderMode: true 不然地图会不响应 要操作地图点位才会出现
   viewer.scene.requestRender()
