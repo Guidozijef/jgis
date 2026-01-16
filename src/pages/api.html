@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JGIS API 文档</title>
+  <meta name="description" content="JGIS 官方 API 文档，详细介绍二维 / 三维地图初始化、图层管理与交互能力。" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #020617;
+      --panel: #0f172a;
+      --border: #1e293b;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    header {
+      padding: 48px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+    }
+
+    header p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    aside {
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    aside h3 {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-top: 32px;
+    }
+
+    aside ul {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+    }
+
+    aside li {
+      margin: 8px 0;
+    }
+
+    main {
+      padding: 40px 48px;
+    }
+
+    section {
+      margin-bottom: 72px;
+    }
+
+    section h2 {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .api-block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    pre {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: #1e293b;
+      color: var(--muted);
+      margin-left: 8px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <nav style="display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto 48px;">
+      <strong style="font-size:20px;letter-spacing:1px;">JGIS</strong>
+      <div>
+        <a href="home.html" style="margin-right:16px;color:var(--text);">首页</a>
+        <a href="api.html" style="margin-right:16px;">API 文档</a>
+        <a href="https://github.com" target="_blank">GitHub</a>
+      </div>
+    </nav>
+    <h1>JGIS</h1>
+    <p>一个基于函数式编程的轻量级 GIS 地图开发工具库，统一封装 OpenLayers 与 Cesium，让二维、三维地图开发更简单。</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" />
+      <img src="https://img.shields.io/badge/license-MIT-green.svg" />
+      <img src="https://img.shields.io/badge/typescript-100%25-blue" />
+    </div>
+    <div class="btns" style="margin-top:32px;">
+      <a class="btn-primary" href="#quick">快速开始</a>
+      <a class="btn-ghost" href="api.html">API 文档</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <aside>
+      <h3>基础</h3>
+      <ul>
+        <li><a href="#useMap">useMap</a></li>
+        <li><a href="#context">onMapReady / getMapContext</a></li>
+      </ul>
+
+      <h3>图层</h3>
+      <ul>
+        <li><a href="#createLayer">createLayer</a></li>
+        <li><a href="#addMarker">addMarker</a></li>
+      </ul>
+
+      <h3>交互</h3>
+      <ul>
+        <li><a href="#createSelect">createSelect</a></li>
+        <li><a href="#createHover">createHover</a></li>
+      </ul>
+    </aside>
+
+    <main>
+
+      <section id="useMap">
+        <h2>useMap <span class="tag">2D / 3D</span></h2>
+        <div class="api-block">
+          <p><strong>说明：</strong>初始化地图并注册为当前容器的激活实例。</p>
+          <pre><code>useMap(containerId: string, options: MapOptions)</code></pre>
+          <p><strong>返回：</strong></p>
+          <ul>
+            <li><code>instance</code>：原生 Map / Viewer</li>
+            <li><code>createLayer</code>：创建地图图层</li>
+            <li><code>addMarker</code>：快速添加点位</li>
+            <li><code>flyTo</code>：视角飞行</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="context">
+        <h2>onMapReady / getMapContext</h2>
+        <div class="api-block">
+          <p>用于在非初始化文件中异步获取地图上下文。</p>
+          <pre><code>onMapReady('mapId', ctx => {})
+
+await getMapContext('mapId')</code></pre>
+        </div>
+      </section>
+
+      <section id="createLayer">
+        <h2>createLayer <span class="tag">2D / 3D</span></h2>
+        <div class="api-block">
+          <p>创建并加载地图图层。</p>
+          <pre><code>createLayer(name: string, options: LayerOptions)</code></pre>
+          <ul>
+            <li><code>type</code>：Vector / Wms / Entity</li>
+            <li><code>url</code>：WMS 服务地址</li>
+            <li><code>layers</code>：WMS 图层名</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="addMarker">
+        <h2>addMarker <span class="tag">2D / 3D</span></h2>
+        <div class="api-block">
+          <p>快速创建点位图层。</p>
+          <pre><code>addMarker(name, points, styleOptions)</code></pre>
+        </div>
+      </section>
+
+      <section id="createSelect">
+        <h2>createSelect</h2>
+        <div class="api-block">
+          <p>统一的点击拾取交互，支持 Vector / WMS。</p>
+          <pre><code>createSelect({ layers, multi, style })</code></pre>
+          <p><strong>事件：</strong></p>
+          <pre><code>onSelect(data => {})</code></pre>
+        </div>
+      </section>
+
+      <section id="createHover">
+        <h2>createHover</h2>
+        <div class="api-block">
+          <p>鼠标悬浮拾取，内置防抖。</p>
+          <pre><code>createHover({ style })</code></pre>
+          <pre><code>onHover(data => {})</code></pre>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>© JGIS · MIT License</p>
+  </footer>
+
+</body>
+
+</html>

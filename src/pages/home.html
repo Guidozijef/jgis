@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JGIS - 轻量级 GIS 地图开发工具库</title>
+  <meta name="description" content="JGIS 是一个基于函数式编程的轻量级 GIS 地图开发工具库，支持 OpenLayers 与 Cesium，提供统一、简洁、高性能的地图开发体验。" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #0f172a;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --card: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #020617, #020617 40%, #020617);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    header {
+      padding: 96px 24px 72px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 48px;
+      margin: 0 0 16px;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 720px;
+      margin: 0 auto 32px;
+    }
+
+    .badges img {
+      margin: 0 6px;
+    }
+
+    .btns a {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 8px;
+      margin: 0 8px;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      border: 1px solid #1e293b;
+      color: var(--text);
+    }
+
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 64px 24px;
+    }
+
+    section h2 {
+      font-size: 32px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    pre {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+
+    footer {
+      border-top: 1px solid #1e293b;
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <img src="./logos.png" style="height: 80px;position: absolute; top: 10px; left: 10px;" />
+    </div>
+    <h1>JGIS</h1>
+    <p>一个基于函数式编程的轻量级 GIS 地图开发工具库，统一封装 OpenLayers 与 Cesium，让二维、三维地图开发更简单。</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/version-1.0.0-blue.svg" />
+      <img src="https://img.shields.io/badge/license-MIT-green.svg" />
+      <img src="https://img.shields.io/badge/typescript-100%25-blue" />
+    </div>
+    <div class="btns" style="margin-top:32px;">
+      <a class="btn-primary" href="home.html">快速开始</a>
+      <a class="btn-ghost" href="api.html">API 文档</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>为什么选择 JGIS</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>多入口架构</h3>
+        <p>按需引入 jgis/2d 或 jgis/3d，二维项目不会打包任何三维代码，体积更小。</p>
+      </div>
+      <div class="card">
+        <h3>函数式设计</h3>
+        <p>Hooks 风格 API，自动绑定地图上下文，避免在业务代码中反复传递 map 实例。</p>
+      </div>
+      <div class="card">
+        <h3>全能拾取</h3>
+        <p>一套 Select / Hover API 同时支持 Vector 与 WMS 服务，统一回调与高亮样式。</p>
+      </div>
+      <div class="card">
+        <h3>二三维一致</h3>
+        <p>OpenLayers 与 Cesium API 风格统一，降低学习成本，快速切换二维与三维场景。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="quick">
+    <h2>快速开始</h2>
+    <pre><code>// 安装
+npm install jgis ol cesium
+
+// 2D 初始化
+import { useMap } from 'jgis/2d'
+useMap('map-container', {
+  center: [116.4, 39.9],
+  zoom: 10
+})</code></pre>
+  </section>
+
+  <section id="api">
+    <h2>API 总览</h2>
+    <p style="text-align:center;color:var(--muted);max-width:760px;margin:0 auto 48px;">JGIS 提供高度一致的二维 / 三维 API 设计，以下为核心 API
+      的详细说明，覆盖地图初始化、图层管理、交互能力与异步上下文获取。</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>useMap</h3>
+        <p><strong>说明：</strong>创建并注册地图实例，作为当前容器的激活地图上下文。</p>
+        <pre><code>useMap(containerId: string, options: MapOptions)</code></pre>
+        <p><strong>返回：</strong></p>
+        <ul>
+          <li><code>instance</code>：原生 Map / Viewer 实例</li>
+          <li><code>createLayer</code>：创建 Vector / WMS / Entity 图层</li>
+          <li><code>addMarker</code>：快速添加点位图层</li>
+          <li><code>flyTo</code>：视角飞行（3D / 2D 统一）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>createLayer</h3>
+        <p><strong>说明：</strong>创建地图图层，支持二维 Vector / WMS 与三维 Entity 图层。</p>
+        <pre><code>createLayer(name: string, options: LayerOptions)</code></pre>
+        <p><strong>常用参数：</strong></p>
+        <ul>
+          <li><code>type</code>：Vector | Wms | Entity</li>
+          <li><code>url</code>：WMS 服务地址</li>
+          <li><code>layers</code>：WMS 图层名</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>createSelect</h3>
+        <p><strong>说明：</strong>统一的点击拾取交互，支持 Vector 与 WMS 要素。</p>
+        <pre><code>createSelect(options?: SelectOptions)</code></pre>
+        <p><strong>配置项：</strong></p>
+        <ul>
+          <li><code>layers</code>：监听的图层列表</li>
+          <li><code>multi</code>：是否支持多选</li>
+          <li><code>style</code>：高亮样式或回调函数</li>
+        </ul>
+        <p><strong>事件：</strong><code>onSelect(callback)</code></p>
+      </div>
+
+      <div class="card">
+        <h3>createHover</h3>
+        <p><strong>说明：</strong>鼠标悬浮拾取交互，内置防抖处理。</p>
+        <pre><code>createHover(options?: HoverOptions)</code></pre>
+        <p><strong>返回：</strong><code>onHover(callback)</code></p>
+      </div>
+
+      <div class="card">
+        <h3>onMapReady</h3>
+        <p><strong>说明：</strong>用于跨文件、异步获取地图上下文。</p>
+        <pre><code>onMapReady(containerId, callback)</code></pre>
+        <p>适合在业务模块中使用，无需关心地图初始化顺序。</p>
+      </div>
+
+      <div class="card">
+        <h3>getMapContext</h3>
+        <p><strong>说明：</strong>以 Promise 形式获取地图上下文。</p>
+        <pre><code>getMapContext(containerId).then(ctx => {})</code></pre>
+        <p>适合 async / await 使用场景。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>适合哪些项目</h2>
+    <div class="grid">
+      <div class="card">
+        <p>✔ 业务 GIS 系统快速开发</p>
+      </div>
+      <div class="card">
+        <p>✔ 二三维一体化项目</p>
+      </div>
+      <div class="card">
+        <p>✔ 中后台地图应用</p>
+      </div>
+      <div class="card">
+        <p>✔ 需要同时操作 Vector 与 WMS 的场景</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 JGIS · MIT License · Built with ❤️ for GIS Developers</p>
+  </footer>
+
+</body>
+
+</html>

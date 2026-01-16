@@ -2,7 +2,7 @@ import * as Cesium from 'cesium'
 import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, setView, destroyMap } from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
 import { createBaseLayer, createBlankLayer, createLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
-import { billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext } from './types'
+import { billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext, optionsMap } from './types'
 import { getMapContext as getMapContexted, onMapReady as onMapReadyed, registerMap } from './store'
 
 /**
@@ -22,7 +22,8 @@ export function useMap(el: string, options: any) {
     instance: viewer,
     addMarker: (layerName: string, points: any[], options: billboardOptions & { getImage?: Function }) =>
       addMarker(viewer, layerName, points, options),
-    createLayer: (layerName: string, data: any, options?: LayerOptions) => createLayer(viewer, layerName, data, options),
+    createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }): Cesium.Primitive =>
+      createLayer(viewer, layerName, data, options),
     removeLayer: (layerName: string) => removeLayer(viewer, layerName),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(viewer, layerName, visible),
     getLayerByName: (layerName: string) => getLayerByName(viewer, layerName),

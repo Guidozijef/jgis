@@ -20,7 +20,7 @@ export function createBaseLayer(viewer: Cesium.Viewer, options: any): void {
  * @param options 配置项
  * @returns 图层
  */
-export function createLayer<K extends keyof optionsMap>(viewer: Cesium.Viewer, layerName: string, data: any, options: optionsMap[K] & { type?: K }) {
+export function createLayer<K extends keyof optionsMap>(viewer: Cesium.Viewer, layerName: string, data: any, options?: optionsMap[K] & { type?: K }) {
   if (!options || !options.type) {
     options = Object.assign({}, data, options)
   }
@@ -158,7 +158,7 @@ export function createWmsLayer(viewer: Cesium.Viewer, layerName: string, options
   layer.alpha = options.alpha || 0.5
   layer.brightness = options.brightness || 1.0
   layer.contrast = options.contrast || 1.0
-  layer.gamma = options.gamma || 0.0
+  layer.gamma = options.gamma || 1.0
   return layer
 }
 

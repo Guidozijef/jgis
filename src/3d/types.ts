@@ -60,7 +60,7 @@ export type Coordinates = [number, number, number]
 export interface MapContext {
   targetId: string
   instance: Cesium.Viewer
-  addMarker: (layerName: string, data: any, options?: optionsMap['Point']) => void
+  addMarker: (layerName: string, data: any, options: optionsMap['Point']) => void
   createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
   removeLayer: (layerName: string) => void
   visibleLayer: (layerName: string, visible: boolean) => void
