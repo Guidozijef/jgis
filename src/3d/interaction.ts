@@ -35,11 +35,13 @@ export function createSelect(viewer: Cesium.Viewer, options: SelectOptions): Use
     const pickedObject = viewer.scene.pick(movement.position)
     if (lastPickedPrimitive) {
       Object.assign(lastPickedPrimitive, lastPickedPrimitive._originStyle)
+      lastPickedPrimitive.isSelected = false
       lastPickedPrimitive = null
       viewer.scene.requestRender()
     }
     if (Cesium.defined(pickedObject) && pickedObject.primitive instanceof Cesium.Billboard) {
       const primitive = pickedObject.primitive
+      primitive.isSelected = true
       const data: SelectResult = {
         primitive: primitive,
         properties: primitive.properties,
@@ -120,8 +122,11 @@ export function createHover(viewer: Cesium.Viewer, options: HoverOptions): UseHo
       }
       notifyThrottle(data)
       lastPickedPrimitive = primitive
-      Object.assign(primitive, options.style || options.getStyle(primitive))
-      viewer.scene.requestRender()
+      // TODO: 没选中才改变样式
+      if (!primitive.isSelected) {
+        Object.assign(primitive, options.style || options.getStyle(primitive))
+        viewer.scene.requestRender()
+      }
     }
   }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
 
