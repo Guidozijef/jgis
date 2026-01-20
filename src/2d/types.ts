@@ -71,9 +71,17 @@ export interface flyOptions {
   easing?: (t: number) => number
 }
 
+export type Asyncify<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R
+    ? T[K] extends <K2 extends any>(...args: any) => any
+      ? T[K] // 泛型函数直接保留原型，不包装
+      : (...args: A) => Promise<R>
+    : () => Promise<T[K]>
+}
+
 export interface MapContext {
-  targetId: string
-  instance: MapInstance
+  getTargetId: () => string
+  getInstance: () => MapInstance
   addMarker: (layerName: string, data: any, options?: LayerOptions) => void
   createLayer: (layerName: string, data: any, options?: LayerOptions) => Layer
   removeLayer: (layerName: string) => void
@@ -93,7 +101,5 @@ export interface MapContext {
   getProjection: () => Projection
   getZoom: () => number
   setZoom: (zoom: number) => void
-  getMapContext: (id: string) => Promise<MapContext>
-  onMapReady: (id: string, callback: (ctx: MapContext) => void) => void
   destroyMap: (map: MapInstance, id: string) => void
 }

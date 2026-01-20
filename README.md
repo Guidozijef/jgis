@@ -64,7 +64,7 @@ import { useMap } from 'jgis/2d';
 
 onMounted(() => {
   // 初始化地图，会自动注册为全局激活实例
-  const { instance, addMarker, createLayer } = useMap('map-container', {
+  const { getInstance, addMarker, createLayer } = useMap('map-container', {
     center: [116.4, 39.9],
     zoom: 10
   });
@@ -164,12 +164,12 @@ onHover(data => {
 ```
 
 
-### 3. 异步调用
+### 3. 异步获取
 
 如果创建地图的`useMap`在一个文件，而选择交互在另一个文件，可以使用异步调用。在文件中使用`onMapReady`和`getMapContext`方法来获取地图方法，而不需要传递跟地图相关的任何参数，但是必须指定地图容器的 id。例如：
 
 ```js
-import { onMapReady, getMapContext } from 'jgis/2d';
+import { onMapReady, getMapContext, getMapContextAsync } from 'jgis/2d';
 
 // 'map-container' 是地图容器的 id
 onMapReady('map-container', ({ createLayer, flyTo }) => {
@@ -177,9 +177,30 @@ onMapReady('map-container', ({ createLayer, flyTo }) => {
 })
 
 
-getMapContext('map-container').then(({ createLayer, flyTo }) => {
+getMapContextAsync('map-container').then(({ createLayer, flyTo }) => {
   
 })
+
+
+const { createLayer, flyTo，getZoom } = getMapContext('map-container');
+
+
+```
+**注意：**⚠️ 所有通过 `getMapContext` 获取的 API 都是异步的。
+
+- 当你需要返回值或严格的执行顺序时，请使用 await
+- 当你只是触发行为时，可以直接调用
+
+例如：
+
+```js
+import { onMapReady, getMapContext, getMapContextAsync } from 'jgis/2d';
+
+
+const { createLayer, flyTo, getZoom } = getMapContext('map-container');
+
+const zoom = await getZoom();
+await createLayer({ ... });
 
 ```
 
@@ -266,12 +287,12 @@ onHover((data) => {
 
 
 
-### 3. 异步调用
+### 3. 异步获取
 
-如果创建地图的`useMap`在一个文件，而选择交互在另一个文件，可以使用异步调用。在文件中使用`onMapReady`和`getMapContext`方法来获取地图方法，而不需要传递跟地图相关的任何参数，但是必须指定地图容器的 id。例如：
+如果创建地图的`useMap`在一个文件，而选择交互在另一个文件，可以使用异步调用。在文件中使用`onMapReady`和`getMapContext`方法来获取地图方法，而不需要传递跟地图相关的任何参数，但是必须指定地图容器的 id。可以在单文件中使用，例如：
 
 ```js
-import { onMapReady, getMapContext } from 'jgis/3d';
+import { onMapReady, getMapContext, getMapContextAsync } from 'jgis/3d';
 
 // 'map-container' 是地图容器的 id
 onMapReady('map-container', ({ createLayer, flyTo }) => {
@@ -279,9 +300,31 @@ onMapReady('map-container', ({ createLayer, flyTo }) => {
 })
 
 
-getMapContext('map-container').then(({ createLayer, flyTo }) => {
+getMapContextAsync('map-container').then(({ createLayer, flyTo }) => {
   
 })
+
+
+const { createLayer, flyTo，getZoom } = getMapContext('map-container');
+
+
+```
+
+**注意：**⚠️ 所有通过 `getMapContext` 获取的 API 都是异步的。
+
+- 当你需要返回值或严格的执行顺序时，请使用 await
+- 当你只是触发行为时，可以直接调用
+
+例如：
+
+```js
+import { onMapReady, getMapContext, getMapContextAsync } from 'jgis/3d';
+
+
+const { createLayer, flyTo, getLayerByName } = getMapContext('map-container');
+
+const zoom = await getLayerByName('layer-name');
+await createLayer({ ... });
 
 ```
 

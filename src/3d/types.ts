@@ -57,14 +57,22 @@ export type billboardOptions = Omit<Cesium.Billboard.ConstructorOptions, 'positi
 
 export type Coordinates = [number, number, number]
 
+export type Asyncify<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R
+    ? T[K] extends <K2 extends any>(...args: any) => any
+      ? T[K] // 泛型函数直接保留原型，不包装
+      : (...args: A) => Promise<R>
+    : () => Promise<T[K]>
+}
+
 export interface MapContext {
-  targetId: string
-  instance: Cesium.Viewer
+  getTargetId: () => string
+  getInstance: () => Cesium.Viewer
   addMarker: (layerName: string, data: any, options: optionsMap['Point']) => void
   createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
   removeLayer: (layerName: string) => void
   visibleLayer: (layerName: string, visible: boolean) => void
-  getLayerByName: (layerName: string) => Cesium.Primitive
+  getLayerByName: (layerName: string) => Cesium.PrimitiveCollection | Cesium.Primitive
   createBlankLayer: (layerName: string, options: LayerOptions) => Cesium.Primitive
   // lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
   // flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
@@ -75,7 +83,5 @@ export interface MapContext {
   flyHome: (duration?: number) => void
   flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions) => Promise<boolean>
   setView: (coordinate: Coordinates, options?: flyOptions) => void
-  getMapContext: (id: string) => Promise<MapContext>
-  onMapReady: (id: string, callback: (cxt: MapContext) => void) => void
   destroyMap: (id: string) => void
 }

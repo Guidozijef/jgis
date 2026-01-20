@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium'
 import { billboardOptions, Coordinates, flyOptions, optionsMap } from './types'
-import { createLayer } from './layer'
+import { createLayer, getLayerByName } from './layer'
 import { unregisterMap } from './store'
 
 /**
@@ -142,6 +142,28 @@ export function setView(viewer: Cesium.Viewer, coordinate: Coordinates, options:
       roll: options.roll || 0
     }
   })
+}
+
+/**
+ * 在多个图层中查找与 data 匹配的 primitive
+ * @param layers 图层数组，每个图层都是 Cesium.PrimitiveCollection
+ * @param data 待匹配的数据对象，字段动态
+ * @returns 找到的第一个匹配 primitive 或 null
+ */
+export function queryPrimitive(viewer: Cesium.Viewer, layerName: string, data: Record<string, any>): Cesium.Primitive | null {
+  const layers = getLayerByName(viewer, layerName)
+  if (!layers) return null
+  return (
+    layers &&
+    layers.find((layer: Cesium.PrimitiveCollection) => {
+      return (
+        layer &&
+        layer.primitives.find((primitive: Cesium.Primitive) => {
+          return primitive && primitive.id === data.id
+        })
+      )
+    })
+  )
 }
 
 /**

@@ -64,12 +64,7 @@ export function removeLayerByName(map: Map, layerName: string) {
  * @param options 配置
  * @param zoomFlag 是否高亮 默认false
  */
-export function lightFeature(
-  layerName: string,
-  feature: FeatureLike,
-  options: HighLightOptions,
-  zoomFlag = false
-): void {
+export function lightFeature(layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag = false): void {
   const style = zoomFlag ? options.style || options.getStyle(layerName, feature as Feature<Geometry>) : undefined
   const index = zoomFlag ? 999 : -1
   if (style && typeof (style as any).setZIndex === 'function') {

@@ -1,7 +1,7 @@
 // src/2d/store.ts
 
 // 定义 useMap 返回的类型（根据你之前的封装）
-import { MapContext } from './types'
+import { Asyncify, MapContext } from './types'
 
 // 内部存储容器
 const mapRegistry = new Map<string, MapContext>()
@@ -33,20 +33,37 @@ export const registerMap = (id: string, context: MapContext) => {
     delete contentCallbacks[id] // 清空队列
   }
 }
+
+/**
+ * 异步获取已创建的地图上下文
+ * @param id 地图容器的 ID (target)
+ * @returns {Promise<MapContext>}
+ */
+export function getMapContextAsync(id: string): Promise<MapContext> {
+  const context = mapRegistry.get(id)
+  if (context) return Promise.resolve(context)
+
+  return new Promise((resolve) => {
+    contentCallbacks[id] = contentCallbacks[id] || []
+    contentCallbacks[id].push(resolve)
+  })
+}
+
 /**
  * 获取已创建的地图上下文
  * @param id 地图容器的 ID (target)
+ * @returns {Asyncify<MapContext>}
  */
-export function getMapContext(id: string): Promise<MapContext> {
-  const context = mapRegistry.get(id)
-  if (!context) {
-    // console.warn(`Map '${id}' not found. Make sure useMap() is called first.`)
-    return new Promise((resolve) => {
-      contentCallbacks[id] = contentCallbacks[id] || []
-      contentCallbacks[id].push(resolve)
-    })
-  }
-  return Promise.resolve(context)
+export function getMapContext(id: string): Asyncify<MapContext> {
+  return new Proxy({} as MapContext, {
+    get(_, key: keyof MapContext) {
+      return async (...args: any[]) => {
+        const ctx = await getMapContextAsync(id)
+        const target = ctx[key]
+        return typeof target === 'function' ? target.apply(ctx, args) : target
+      }
+    }
+  })
 }
 
 /**

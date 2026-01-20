@@ -2,8 +2,8 @@ import * as Cesium from 'cesium'
 import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, setView, destroyMap } from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
 import { createBaseLayer, createBlankLayer, createLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
-import { billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext, optionsMap } from './types'
-import { getMapContext as getMapContexted, onMapReady as onMapReadyed, registerMap } from './store'
+import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext, optionsMap } from './types'
+import { getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced, onMapReady as onMapReadyed, registerMap } from './store'
 
 /**
  * 创建地图
@@ -18,8 +18,8 @@ export function useMap(el: string, options: any) {
   createBaseLayer(viewer, options)
 
   const context: MapContext = {
-    targetId: el,
-    instance: viewer,
+    getTargetId: (): string => el,
+    getInstance: (): Cesium.Viewer => viewer,
     addMarker: (layerName: string, points: any[], options: billboardOptions & { getImage?: Function }) =>
       addMarker(viewer, layerName, points, options),
     createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }): Cesium.Primitive =>
@@ -35,8 +35,6 @@ export function useMap(el: string, options: any) {
     flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions): Promise<boolean> =>
       flyToBoundingSphere(viewer, boundingSphere, options),
     setView: (coordinate: Coordinates, options?: flyOptions): void => setView(viewer, coordinate, options),
-    getMapContext: (id: string): Promise<MapContext> => getMapContexted(id),
-    onMapReady: (id: string, callback: (cxt: MapContext) => void): void => onMapReadyed(id, callback),
     destroyMap: (id: string): void => destroyMap(viewer, id)
   }
 
@@ -57,8 +55,17 @@ export function onMapReady(id: string, callback: (ctx: MapContext) => void) {
 /**
  * 获取地图返回的上下文
  * @param id
- * @returns Promise<MapContext>
+ * @returns {Asyncify<MapContext>}
  */
-export function getMapContext(id: string): Promise<MapContext> {
+export function getMapContext(id: string): Asyncify<MapContext> {
   return getMapContexted(id)
+}
+
+/**
+ * 异步获取地图返回的上下文
+ * @param id
+ * @returns {Promise<MapContext>}
+ */
+export function getMapContextAsync(id: string): Promise<MapContext> {
+  return getMapContextAsynced(id)
 }

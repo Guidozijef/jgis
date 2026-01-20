@@ -1,10 +1,10 @@
 import { Feature } from 'ol'
 import { createMap, addMarker, flyTo, flyToByExtent, flyToByFeature, getProjection, setZoom, getZoom, destroyMap } from './core'
-import { registerMap, onMapReady as onMapReadyed, getMapContext as getMapContexted } from './store'
+import { registerMap, onMapReady as onMapReadyed, getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced } from './store'
 import { createBaseLayer, createLayer, removeLayer, createBlankLayer, getLayerByName, visibleLayer } from './layer'
 import { getSourceByName } from './source'
 import { createSelect, SelectOptions, UseSelectResult, createHover, HoverOptions, UseHoverResult } from './interaction'
-import { customFeature, FlashOptions, flyOptions, HighLightOptions, LayerOptions, mapConfigOptions, MapContext } from './types'
+import { Asyncify, customFeature, FlashOptions, flyOptions, HighLightOptions, LayerOptions, mapConfigOptions, MapContext, MapInstance } from './types'
 import { FeatureLike } from 'ol/Feature'
 import { getLonLat, queryFeature, lightFeature, flashFeature } from './utils'
 
@@ -19,8 +19,8 @@ export const useMap = (el: string, config: mapConfigOptions) => {
   createBaseLayer(map, config.baseLayers)
 
   const context: MapContext = {
-    targetId: el,
-    instance: map, // 暴露原始实例以备不时之需
+    getTargetId: (): string => el,
+    getInstance: (): MapInstance => map, // 暴露原始实例以备不时之需
     addMarker: (layerName: string, data: any, options?: LayerOptions) => addMarker(map, layerName, data, options),
     createLayer: (layerName: string, data: any, options?: LayerOptions) => createLayer(map, layerName, data, options),
     createBlankLayer: (layerName: string, options?: LayerOptions) => createBlankLayer(map, layerName, options),
@@ -41,8 +41,6 @@ export const useMap = (el: string, config: mapConfigOptions) => {
     getProjection: () => getProjection(map),
     getZoom: () => getZoom(map),
     setZoom: (zoom: number) => setZoom(map, zoom),
-    getMapContext: (id: string): Promise<MapContext> => getMapContexted(id),
-    onMapReady: (id: string, callback: (ctx: MapContext) => void) => onMapReadyed(id, callback),
     destroyMap: () => destroyMap(map, el)
   }
 
@@ -63,8 +61,17 @@ export function onMapReady(id: string, callback: (ctx: MapContext) => void) {
 /**
  * 获取地图返回的上下文
  * @param id
- * @returns Promise<MapContext>
+ * @returns {Asyncify<MapContext>}
  */
-export function getMapContext(id: string): Promise<MapContext> {
+export function getMapContext(id: string): Asyncify<MapContext> {
   return getMapContexted(id)
+}
+
+/**
+ * 异步获取地图返回的上下文
+ * @param id
+ * @returns {Promise<MapContext>}
+ */
+export function getMapContextAsync(id: string): Promise<MapContext> {
+  return getMapContextAsynced(id)
 }

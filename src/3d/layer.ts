@@ -181,7 +181,7 @@ export function createBlankLayer(viewer: Cesium.Viewer, layerName: string): Cesi
  * @param layerName 图层名
  * @returns {Primitive} 图层
  */
-export function getLayerByName(viewer: Cesium.Viewer, layerName: string): Cesium.Primitive {
+export function getLayerByName(viewer: Cesium.Viewer, layerName: string): Cesium.PrimitiveCollection {
   const primitives = viewer.scene.primitives
   const length = primitives.length
 
