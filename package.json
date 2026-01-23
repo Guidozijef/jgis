@@ -1,6 +1,6 @@
 {
   "name": "jgis",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "快速创建二维、三维工具库",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -48,7 +48,7 @@
   "bugs": {
     "url": "https://github.com/Guidozijef/jgis/issues"
   },
-  "homepage": "https://github.com/Guidozijef/jgis#readme",
+  "homepage": "https://guidozijef.github.io/jgis-docs/",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@turf/turf": "^7.3.1",

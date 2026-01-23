@@ -9,6 +9,10 @@
 
 **JGIS** 是一个基于函数式编程思维构建的轻量级 GIS 工具库。它采用多入口架构，严格分离二维（OpenLayers）与三维（Cesium）依赖，提供开箱即用的高阶交互钩子和统一的 API 设计。
 
+## 🚀 官网
+
+[前往jgis](https://guidozijef.github.io/jgis-docs/)
+
 ## ✨ 核心特性
 
 *   **📦 多入口架构 (Multi-Entry)**：
@@ -25,7 +29,7 @@
 *   **🗺️ 二三维API风格一致**：
     *   二三维API风格一致，方便会一种框架的开发者快速理解和上手开发另一种框架。
 *   **🗺️ 完全兼容openlayers/cesium**：
-    *   导出`instance`地图实例，可自己操作原生API。
+    *   通过`getInstance`方法获取地图实例，可自己操作框架`openlayers/cesium`原生API。
     *   如果有特殊需求，完全可以自己用原生实现，没有任何违和感。
 
 
@@ -186,9 +190,9 @@ const { createLayer, flyTo，getZoom } = getMapContext('map-container');
 
 
 ```
-**注意：**⚠️ 所有通过 `getMapContext` 获取的 API 都是异步的。
+**注意：** ⚠️ 所有通过 `getMapContext` 获取的 API 都是异步的。
 
-- 当你需要返回值或严格的执行顺序时，请使用 await
+- 当你需要返回值或严格的执行顺序时，请使用 `await`
 - 当你只是触发行为时，可以直接调用
 
 例如：
