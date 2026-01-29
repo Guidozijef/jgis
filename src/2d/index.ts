@@ -6,7 +6,7 @@ import { getSourceByName } from './source'
 import { createSelect, SelectOptions, UseSelectResult, createHover, HoverOptions, UseHoverResult } from './interaction'
 import { Asyncify, customFeature, FlashOptions, flyOptions, HighLightOptions, LayerOptions, mapConfigOptions, MapContext, MapInstance } from './types'
 import { FeatureLike } from 'ol/Feature'
-import { getLonLat, queryFeature, lightFeature, flashFeature } from './utils'
+import { getLonLat, findFeature, lightFeature, flashFeature } from './utils'
 
 /**
  * 创建地图
@@ -31,7 +31,7 @@ export const useMap = (el: string, config: mapConfigOptions) => {
     getSourceByName: (layerName: string) => getSourceByName(map, layerName),
     createSelect: (options: SelectOptions): UseSelectResult => createSelect(map, options),
     createHover: (options: HoverOptions): UseHoverResult => createHover(map, options),
-    queryFeature: (layerName: string, properties: any): FeatureLike => queryFeature(map, layerName, properties),
+    findFeature: (layerName: string, properties: any): FeatureLike => findFeature(map, layerName, properties),
     lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) =>
       lightFeature(layerName, feature, options, zoomFlag),
     flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => flashFeature(layerName, feature, options),

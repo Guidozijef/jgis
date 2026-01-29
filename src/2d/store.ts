@@ -73,6 +73,7 @@ export const unregisterMap = (id: string) => {
   if (mapRegistry.has(id)) {
     mapRegistry.delete(id)
     delete readyCallbacks[id]
+    delete contentCallbacks[id]
   }
 }
 

@@ -44,6 +44,7 @@ export type ILineOptions = {
 
 export interface optionsMap {
   Point: billboardOptions & { getImage?: Function }
+  EntityPoint: billboardOptions & { getImage?: Function }
   LineString: ILineOptions
   MultiLineString: ILineOptions
   Polygon: any
@@ -68,12 +69,13 @@ export type Asyncify<T> = {
 export interface MapContext {
   getTargetId: () => string
   getInstance: () => Cesium.Viewer
-  addMarker: (layerName: string, data: any, options: optionsMap['Point']) => void
+  addMarker: (layerName: string, data: Record<string, any>, options: optionsMap['Point']) => void
   createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
   removeLayer: (layerName: string) => void
   visibleLayer: (layerName: string, visible: boolean) => void
-  getLayerByName: (layerName: string) => Cesium.PrimitiveCollection | Cesium.Primitive
+  getLayerByName: (layerName: string) => Cesium.BillboardCollection | Cesium.EntityCollection
   createBlankLayer: (layerName: string, options: LayerOptions) => Cesium.Primitive
+  findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number) => Cesium.Entity | Cesium.Billboard
   // lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
   // flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
   // queryFeature: (layerName: string, properties: any) => FeatureLike

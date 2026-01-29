@@ -1,5 +1,5 @@
 import * as Cesium from 'cesium'
-import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, setView, destroyMap } from './core'
+import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, findGraphic, setView, destroyMap } from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
 import { createBaseLayer, createBlankLayer, createLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
 import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext, optionsMap } from './types'
@@ -26,7 +26,9 @@ export function useMap(el: string, options: any) {
       createLayer(viewer, layerName, data, options),
     removeLayer: (layerName: string) => removeLayer(viewer, layerName),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(viewer, layerName, visible),
-    getLayerByName: (layerName: string) => getLayerByName(viewer, layerName),
+    getLayerByName: (layerName: string): Cesium.BillboardCollection | Cesium.EntityCollection => getLayerByName(viewer, layerName),
+    findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number): Cesium.Billboard | Cesium.Entity =>
+      findGraphic(viewer, layerName, data, tolerance),
     createBlankLayer: (layerName: string): Cesium.Primitive => createBlankLayer(viewer, layerName),
     createSelect: (options: SelectOptions): UseSelectResult => createSelect(viewer, options),
     createHover: (options: HoverOptions): UseHoverResult => createHover(viewer, options),

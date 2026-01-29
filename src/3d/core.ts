@@ -2,6 +2,7 @@ import * as Cesium from 'cesium'
 import { billboardOptions, Coordinates, flyOptions, optionsMap } from './types'
 import { createLayer, getLayerByName } from './layer'
 import { unregisterMap } from './store'
+import { getLonLat } from './utils'
 
 /**
  * 创建Viewer
@@ -146,24 +147,54 @@ export function setView(viewer: Cesium.Viewer, coordinate: Coordinates, options:
 
 /**
  * 在多个图层中查找与 data 匹配的 primitive
- * @param layers 图层数组，每个图层都是 Cesium.PrimitiveCollection
+ * @param viewer 视图对象
+ * @param layerName 图层名称
  * @param data 待匹配的数据对象，字段动态
  * @returns 找到的第一个匹配 primitive 或 null
  */
-export function queryPrimitive(viewer: Cesium.Viewer, layerName: string, data: Record<string, any>): Cesium.Primitive | null {
+export function findGraphic(
+  viewer: Cesium.Viewer,
+  layerName: string,
+  data: Record<string, any>,
+  tolerance: number = 0.1
+): Cesium.Billboard | Cesium.Entity {
   const layers = getLayerByName(viewer, layerName)
-  if (!layers) return null
-  return (
-    layers &&
-    layers.find((layer: Cesium.PrimitiveCollection) => {
-      return (
-        layer &&
-        layer.primitives.find((primitive: Cesium.Primitive) => {
-          return primitive && primitive.id === data.id
-        })
-      )
-    })
-  )
+  if (!layers) {
+    console.warn(`Layer [${layerName}] not found.`)
+    return undefined
+  }
+
+  // 2. 将目标经纬度转换为笛卡尔坐标 (Cartesian3)
+  const targetPosition = Cesium.Cartesian3.fromDegrees(...getLonLat(data), data.height || 0)
+
+  // 3. 定义匹配逻辑函数 (复用逻辑)
+  const isMatch = (itemPosition: Cesium.Cartesian3 | undefined): boolean => {
+    if (!itemPosition) return false
+    // 计算两点距离，如果在容差范围内，则视为匹配
+    const distance = Cesium.Cartesian3.distance(itemPosition, targetPosition)
+    return distance <= tolerance
+  }
+
+  if (layers instanceof Cesium.BillboardCollection) {
+    for (let i = 0; i < layers.length; i++) {
+      const billboard = layers.get(i)
+      if (isMatch(billboard.position)) {
+        return billboard
+      }
+    }
+  } else if (layers instanceof Cesium.EntityCollection) {
+    const entities = layers.values // EntityCollection.values 是一个数组
+    const currentTime = viewer.clock.currentTime // 获取当前时间用于计算 Entity 位置
+
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i]
+      // Entity 的 position 是一个 Property，需要根据时间获取具体坐标
+      const position = entity.position?.getValue(currentTime)
+      if (isMatch(position)) {
+        return entity
+      }
+    }
+  }
 }
 
 /**

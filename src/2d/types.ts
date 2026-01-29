@@ -92,7 +92,7 @@ export interface MapContext {
   createBlankLayer: (layerName: string, options: LayerOptions) => Layer
   lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
   flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
-  queryFeature: (layerName: string, properties: any) => FeatureLike
+  findFeature: (layerName: string, properties: any) => FeatureLike
   createSelect: (options: SelectOptions) => UseSelectResult
   createHover: (options: HoverOptions) => UseHoverResult
   flyTo: (coordinate: [number, number], options: flyOptions) => Promise<boolean>

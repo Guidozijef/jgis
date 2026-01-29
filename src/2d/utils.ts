@@ -112,7 +112,7 @@ export function flashFeature(layerName: string, feature: FeatureLike & customFea
  * @param properties 数据
  * @returns Feature 要素
  */
-export function queryFeature(map: Map, layerName: string, properties: any): FeatureLike {
+export function findFeature(map: Map, layerName: string, properties: any): FeatureLike {
   if (!properties) return
   let coordinate = getLonLat(properties)
   const allFeatures = getSourceByName(map, layerName)?.getFeatures?.()
