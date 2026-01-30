@@ -7,9 +7,7 @@ import Feature, { FeatureLike } from 'ol/Feature'
 import { Cluster, Vector as VectorSource, TileWMS, XYZ } from 'ol/source'
 import { GeoJSON } from 'ol/format'
 import Overlay from 'ol/Overlay'
-import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult } from './types'
-import type { StyleLike, StyleFunction } from 'ol/style/Style'
-import Style from 'ol/style/Style'
+import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult, XYZOptions, getFirstParams } from './types'
 import { circle as tCircle } from '@turf/turf'
 import { createSourceByWms, createSources } from './source'
 import { getLonLat } from './utils'
@@ -39,7 +37,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   })
   layer.set('name', 'tdt-base-layer')
   const layerNote = new TileLayer({
-    className: 'tdt-base-layer',
+    className: 'tdt-baseNote-layer',
     source: new XYZ({
       url: `http://t0.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
@@ -50,6 +48,34 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   layerNote.set('name', 'tdt-baseNote-layer')
   map.addLayer(layer)
   map.addLayer(layerNote)
+  return layer
+}
+
+/**
+ * 修改图层
+ * @param map 地图实例
+ * @param layerName 图层名称
+ * @param options 配置项
+ * @returns {TileLayer<XYZ>}
+ */
+export function changeBaseLayer(map: Map, layerName: string, options: XYZOptions): TileLayer<XYZ> {
+  removeLayer(map, ['tdt-base-layer', 'tdt-baseNote-layer'])
+  const layer = new TileLayer({
+    className: `${layerName}-base-layer`,
+    source: new XYZ({
+      url: options.url,
+      tileGrid: options.tileGrid,
+      tileUrlFunction: options.tileUrlFunction,
+      wrapX: options.wrapX || true,
+      crossOrigin: 'anonymous',
+      projection: options.projection || 'EPSG:4326',
+      maxZoom: options.maxZoom || 18,
+      minZoom: options.minZoom || 2
+    }),
+    zIndex: options.zIndex || 1
+  })
+  layer.set('name', layerName)
+  map.addLayer(layer)
   return layer
 }
 

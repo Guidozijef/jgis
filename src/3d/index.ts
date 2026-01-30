@@ -1,8 +1,8 @@
 import * as Cesium from 'cesium'
 import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, findGraphic, setView, destroyMap } from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
-import { createBaseLayer, createBlankLayer, createLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
-import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, MapContext, optionsMap } from './types'
+import { createBaseLayer, createBlankLayer, createLayer, changeBaseLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
+import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, mapConfigOptions, MapContext, optionsMap } from './types'
 import { getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced, onMapReady as onMapReadyed, registerMap } from './store'
 
 /**
@@ -11,11 +11,11 @@ import { getMapContext as getMapContexted, getMapContextAsync as getMapContextAs
  * @param options 配置项
  * @returns 地图方法和地图实例
  */
-export function useMap(el: string, options: any) {
+export function useMap(el: string, options: mapConfigOptions): MapContext {
   // TODO 创建3D地图
 
   const viewer = createViewer(el, options)
-  createBaseLayer(viewer, options)
+  createBaseLayer(viewer, options.baseLayers)
 
   const context: MapContext = {
     getTargetId: (): string => el,
@@ -25,6 +25,7 @@ export function useMap(el: string, options: any) {
     createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }): Cesium.Primitive =>
       createLayer(viewer, layerName, data, options),
     removeLayer: (layerName: string) => removeLayer(viewer, layerName),
+    changeBaseLayer: (layerName: string, options: { url: string }) => changeBaseLayer(viewer, layerName, options),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(viewer, layerName, visible),
     getLayerByName: (layerName: string): Cesium.BillboardCollection | Cesium.EntityCollection => getLayerByName(viewer, layerName),
     findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number): Cesium.Billboard | Cesium.Entity =>

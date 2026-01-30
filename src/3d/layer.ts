@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium'
 import { addTDTImageryProvider } from './baseMap'
-import { WmsOptions, ILineOptions, optionsMap } from './types'
+import { WmsOptions, ILineOptions, optionsMap, BaseLayerOptions } from './types'
 import { getLonLat } from '../index'
 
 /**
@@ -8,7 +8,7 @@ import { getLonLat } from '../index'
  * @param {Cesium.Viewer} viewer 视图
  * @param {any} options 配置项
  */
-export function createBaseLayer(viewer: Cesium.Viewer, options: any): void {
+export function createBaseLayer(viewer: Cesium.Viewer, options: BaseLayerOptions): void {
   addTDTImageryProvider(viewer, options)
 }
 
@@ -17,7 +17,7 @@ export function createBaseLayer(viewer: Cesium.Viewer, options: any): void {
  * @param {Cesium.Viewer} viewer {Map} 地图
  * @param {string} layerName 图层名称
  * @param {any} data 数据
- * @param options 配置项
+ * @param {optionsMap[K] & { type?: K }} options 配置项
  * @returns 图层
  */
 export function createLayer<K extends keyof optionsMap>(viewer: Cesium.Viewer, layerName: string, data: any, options?: optionsMap[K] & { type?: K }) {
@@ -231,6 +231,25 @@ export function createBlankLayer(viewer: Cesium.Viewer, layerName: string): Cesi
 }
 
 /**
+ *
+ * @param viewer shitu
+ * @param layerName 图层名称
+ * @param options 配置项
+ * @returns {Cesium.UrlTemplateImageryProvider}
+ */
+export function changeBaseLayer(viewer: Cesium.Viewer, layerName: string, options: { url: string }): Cesium.UrlTemplateImageryProvider {
+  removeLayer(viewer, ['base-ibo-layer', 'base-cia-layer', 'base-img-layer'])
+  const layer = new Cesium.UrlTemplateImageryProvider({
+    url: options.url,
+    subdomains: ['0', '1', '2', '3', '4', '5', '6', '7'],
+    tilingScheme: new Cesium.WebMercatorTilingScheme()
+  })
+  ;(layer as any)._layerName = layerName
+  viewer.imageryLayers.addImageryProvider(layer)
+  return layer
+}
+
+/**
  * 根据图层名获取图层
  * @param viewer 视图
  * @param layerName 图层名
@@ -260,18 +279,21 @@ export function getLayerByName(viewer: Cesium.Viewer, layerName: string): Cesium
 
 /**
  * 删除图层
- * @param viewer 视图
- * @param layerName 图层名
+ * @param {Cesium.Viewer} viewer 视图
+ * @param {string | string[]} layerName 图层名
  */
-export function removeLayer(viewer, layerName) {
-  const layer = getLayerByName(viewer, layerName)
-  if (layer instanceof Cesium.BillboardCollection) {
-    layer.removeAll()
-  } else if (layer instanceof Cesium.EntityCollection) {
-    layer.removeAll()
+export function removeLayer(viewer: Cesium.Viewer, layerName: string | string[]): void {
+  if (Array.isArray(layerName)) {
+    layerName.forEach((name) => removeLayer(viewer, name))
   } else {
-    console.warn('Layer not found:', layerName)
+    const layer = getLayerByName(viewer, layerName)
+    if (layer instanceof Cesium.BillboardCollection || layer instanceof Cesium.EntityCollection) {
+      layer.removeAll()
+    } else {
+      console.warn('Layer not found:', layerName)
+    }
   }
+
   setTimeout(() => {
     viewer.scene.requestRender()
   })

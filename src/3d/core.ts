@@ -1,5 +1,5 @@
 import * as Cesium from 'cesium'
-import { billboardOptions, Coordinates, flyOptions, optionsMap } from './types'
+import { billboardOptions, Coordinates, flyOptions, mapConfigOptions, optionsMap } from './types'
 import { createLayer, getLayerByName } from './layer'
 import { unregisterMap } from './store'
 import { getLonLat } from './utils'
@@ -10,7 +10,7 @@ import { getLonLat } from './utils'
  * @param {String} [el] Cesium.viewer对应的DOM元素名：<div id="cesiumContainer"></div>
  * @param {String} [terrainUrl] 地形链接
  */
-export function createViewer(el: string, options: any = {}) {
+export function createViewer(el: string, options: Omit<mapConfigOptions, 'baseLayers'>) {
   const viewer = new Cesium.Viewer(el, {
     requestRenderMode: true, //减少应用程序的 CPU/GPU 使用率
     maximumRenderTimeChange: Infinity, //默认时间变化请求一个新帧

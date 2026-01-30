@@ -6,8 +6,9 @@ import { Layer } from 'ol/layer'
 import type { FeatureLike } from 'ol/Feature'
 import Style from 'ol/style/Style'
 import { HoverOptions, SelectOptions, UseHoverResult, UseSelectResult } from './interaction'
-import { Source } from 'ol/source'
+import { Source, XYZ } from 'ol/source'
 import { Projection } from 'ol/proj'
+import TileLayer from 'ol/layer/Tile'
 
 export interface BaseLayerOptions {
   token?: string
@@ -51,6 +52,10 @@ export interface HighLightOptions {
   time?: number
 }
 
+export type getFirstParams<T extends abstract new (...args: any) => any> = ConstructorParameters<T>[0]
+
+export type XYZOptions = getFirstParams<typeof XYZ> & { zIndex?: number }
+
 export interface FlashOptions extends HighLightOptions {}
 
 export type MapLike = any // 可根据实际情况细化
@@ -84,7 +89,8 @@ export interface MapContext {
   getInstance: () => MapInstance
   addMarker: (layerName: string, data: any, options?: LayerOptions) => void
   createLayer: (layerName: string, data: any, options?: LayerOptions) => Layer
-  removeLayer: (layerName: string) => void
+  changeBaseLayer: (layerName: string, options: XYZOptions) => TileLayer<XYZ>
+  removeLayer: (layerName: string | string[]) => void
   visibleLayer: (layerName: string, visible: boolean) => Layer
   getLayerByName: (layerName: string) => Layer
   getSourceByName: (layerName: string) => Source

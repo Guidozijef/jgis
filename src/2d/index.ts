@@ -1,12 +1,26 @@
 import { Feature } from 'ol'
 import { createMap, addMarker, flyTo, flyToByExtent, flyToByFeature, getProjection, setZoom, getZoom, destroyMap } from './core'
 import { registerMap, onMapReady as onMapReadyed, getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced } from './store'
-import { createBaseLayer, createLayer, removeLayer, createBlankLayer, getLayerByName, visibleLayer } from './layer'
+import { createBaseLayer, createLayer, removeLayer, createBlankLayer, changeBaseLayer, getLayerByName, visibleLayer } from './layer'
 import { getSourceByName } from './source'
 import { createSelect, SelectOptions, UseSelectResult, createHover, HoverOptions, UseHoverResult } from './interaction'
-import { Asyncify, customFeature, FlashOptions, flyOptions, HighLightOptions, LayerOptions, mapConfigOptions, MapContext, MapInstance } from './types'
+import {
+  Asyncify,
+  customFeature,
+  FlashOptions,
+  flyOptions,
+  getFirstParams,
+  HighLightOptions,
+  LayerOptions,
+  mapConfigOptions,
+  MapContext,
+  MapInstance,
+  XYZOptions
+} from './types'
 import { FeatureLike } from 'ol/Feature'
 import { getLonLat, findFeature, lightFeature, flashFeature } from './utils'
+import { XYZ } from 'ol/source'
+import TileLayer from 'ol/layer/Tile'
 
 /**
  * 创建地图
@@ -14,7 +28,7 @@ import { getLonLat, findFeature, lightFeature, flashFeature } from './utils'
  * @param config 配置
  * @returns 地图方法和地图实例
  */
-export const useMap = (el: string, config: mapConfigOptions) => {
+export function useMap(el: string, config: mapConfigOptions): MapContext {
   const map = createMap(el, config)
   createBaseLayer(map, config.baseLayers)
 
@@ -25,7 +39,8 @@ export const useMap = (el: string, config: mapConfigOptions) => {
     createLayer: (layerName: string, data: any, options?: LayerOptions) => createLayer(map, layerName, data, options),
     createBlankLayer: (layerName: string, options?: LayerOptions) => createBlankLayer(map, layerName, options),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(map, layerName, visible),
-    removeLayer: (layerName: string) => removeLayer(map, layerName),
+    changeBaseLayer: (layerName: string, options: XYZOptions): TileLayer<XYZ> => changeBaseLayer(map, layerName, options),
+    removeLayer: (layerName: string | string[]) => removeLayer(map, layerName),
     getLonLat: (data: any) => getLonLat(data),
     getLayerByName: (layerName: string) => getLayerByName(map, layerName),
     getSourceByName: (layerName: string) => getSourceByName(map, layerName),

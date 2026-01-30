@@ -9,6 +9,19 @@ export interface flyOptions {
   easing?: (t: number) => number
 }
 
+export interface BaseLayerOptions {
+  token?: string
+  baseType?: string
+  noteType?: string
+}
+
+export interface mapConfigOptions {
+  terrainUrl?: string
+  minZoom?: number
+  maxZoom?: number
+  baseLayers: BaseLayerOptions
+}
+
 export interface LayerOptions {
   // 图层名称
   name?: string
@@ -71,6 +84,7 @@ export interface MapContext {
   getInstance: () => Cesium.Viewer
   addMarker: (layerName: string, data: Record<string, any>, options: optionsMap['Point']) => void
   createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
+  changeBaseLayer: (layerName: string, options: { url: string }) => void
   removeLayer: (layerName: string) => void
   visibleLayer: (layerName: string, visible: boolean) => void
   getLayerByName: (layerName: string) => Cesium.BillboardCollection | Cesium.EntityCollection

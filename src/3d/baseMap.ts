@@ -27,6 +27,7 @@ export function addTDTImageryProvider(viewer, options) {
     subdomains: subdomains,
     tilingScheme: new Cesium.WebMercatorTilingScheme()
   })
+  ;(imgMap as any)._layerName = 'base-img-layer'
   let layer = viewer.imageryLayers.addImageryProvider(imgMap)
   layer.gamma = 1
 
@@ -36,6 +37,7 @@ export function addTDTImageryProvider(viewer, options) {
     subdomains: subdomains,
     tilingScheme: new Cesium.WebMercatorTilingScheme()
   })
+  ;(iboMap as any)._layerName = 'base-ibo-layer'
   viewer.imageryLayers.addImageryProvider(iboMap)
 
   //调用影像中文注记服务
@@ -45,6 +47,7 @@ export function addTDTImageryProvider(viewer, options) {
     tilingScheme: new Cesium.WebMercatorTilingScheme()
     // maximumLevel: 18
   })
+  ;(cia as any)._layerName = 'base-cia-layer'
   viewer.imageryLayers.addImageryProvider(cia) //添加到cesium图层上
 
   // const imageryProviderOsm = new Cesium.UrlTemplateImageryProvider({
