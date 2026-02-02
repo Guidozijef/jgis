@@ -1,6 +1,5 @@
-// src/2d/store.ts
+// src/3d/store.ts
 
-// 定义 useMap 返回的类型（根据你之前的封装）
 import { Asyncify, MapContext } from './types'
 
 // 内部存储容器
@@ -13,6 +12,7 @@ const contentCallbacks: Record<string, Function[]> = {}
 /**
  * 注册地图
  * @param id 地图容器的 ID (target)
+ * @param {MapContext} context 地图上下文
  */
 export const registerMap = (id: string, context: MapContext) => {
   if (mapRegistry.has(id)) {
@@ -85,7 +85,7 @@ export const onMapReady = (id: string, callback: (ctx: MapContext) => void) => {
     return
   }
 
-  // 2. 如果不存在，存入队列，等 registerMap 时调用
+  // 2. 如果不存在，存入队列，等 `registerMap` 时调用
   if (!readyCallbacks[id]) {
     readyCallbacks[id] = []
   }

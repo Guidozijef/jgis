@@ -232,7 +232,7 @@ export function createBlankLayer(viewer: Cesium.Viewer, layerName: string): Cesi
 
 /**
  *
- * @param viewer shitu
+ * @param viewer 视图
  * @param layerName 图层名称
  * @param options 配置项
  * @returns {Cesium.UrlTemplateImageryProvider}

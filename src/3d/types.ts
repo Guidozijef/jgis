@@ -90,9 +90,6 @@ export interface MapContext {
   getLayerByName: (layerName: string) => Cesium.BillboardCollection | Cesium.EntityCollection
   createBlankLayer: (layerName: string, options: LayerOptions) => Cesium.Primitive
   findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number) => Cesium.Entity | Cesium.Billboard
-  // lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) => void
-  // flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => void
-  // queryFeature: (layerName: string, properties: any) => FeatureLike
   createSelect: (options: SelectOptions) => UseSelectResult
   createHover: (options: HoverOptions) => UseHoverResult
   flyTo: (coordinate: Coordinates, options: flyOptions) => Promise<boolean>

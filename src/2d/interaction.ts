@@ -196,6 +196,7 @@ export interface HoverOptions {
   /** 监听图层 */
   layers?: Layer<any, any>[]
   /** 高亮样式 (支持 Style对象 或 函数) */
+  getStyle?: Function
   style?: StyleLike
   /**
    * WMS 请求防抖时间 (毫秒)
@@ -211,7 +212,7 @@ export interface HoverEvent {
   feature: Feature
   layer: Layer
   properties: any
-  coordinate: [number, number]
+  evt: any
 }
 
 export function createHover(map: Map, options: HoverOptions = {}) {
@@ -224,7 +225,14 @@ export function createHover(map: Map, options: HoverOptions = {}) {
   const hoverLayer = new VectorLayer({
     source: hoverSource,
     map: map,
-    style: options.style, // 直接透传用户的样式配置
+    style: (feature: FeatureLike) => {
+      if (typeof options.getStyle === 'function') {
+        const layerName = feature.get('layerName')
+        return options.getStyle(layerName, feature)
+      } else {
+        return options.style
+      }
+    }, // 直接透传用户的样式配置
     zIndex: 10000, // 保证在最上层
     properties: { title: 'JG_HOVER_LAYER' } // 标记一下，防止自己拾取自己
   })
@@ -238,7 +246,7 @@ export function createHover(map: Map, options: HoverOptions = {}) {
   // ----------------------------------------------------
   // 辅助函数：处理结果、高亮和回调
   // ----------------------------------------------------
-  const handleResult = (features: Feature[], layer: Layer, coordinate: [number, number]) => {
+  const handleResult = (features: Feature[], layer: Layer, evt: any) => {
     const feature = features[0] // Hover 通常只取最上面的一个
 
     // 性能优化：如果一直停在同一个要素上，不重复触发
@@ -260,7 +268,7 @@ export function createHover(map: Map, options: HoverOptions = {}) {
         feature,
         layer,
         properties: feature.getProperties(),
-        coordinate
+        evt
       }
       callbacks.forEach((cb) => cb([event]))
     } else {
@@ -275,7 +283,6 @@ export function createHover(map: Map, options: HoverOptions = {}) {
     if (evt.dragging) return // 拖拽地图时不触发
 
     const pixel = evt.pixel
-    const coordinate = evt.coordinate
 
     // --- 1. 先尝试 Vector 拾取 (同步，极快) ---
     let vectorHit = false
@@ -291,7 +298,7 @@ export function createHover(map: Map, options: HoverOptions = {}) {
       // 清除 WMS 等待 (Vector 优先级高)
       if (wmsTimeout) clearTimeout(wmsTimeout)
 
-      handleResult([feature as Feature], layer as Layer, coordinate)
+      handleResult([feature as Feature], layer as Layer, evt)
     })
 
     if (vectorHit) return
@@ -327,7 +334,7 @@ export function createHover(map: Map, options: HoverOptions = {}) {
       // 这里简化为并发请求所有，但只取第一个有结果的
       for (const layer of wmsLayers) {
         const source = (layer as Layer).getSource() as TileWMS | ImageWMS
-        const url = source.getFeatureInfoUrl(coordinate, view.getResolution()!, view.getProjection(), {
+        const url = source.getFeatureInfoUrl(evt.coordinate, view.getResolution()!, view.getProjection(), {
           INFO_FORMAT: 'application/json',
           FEATURE_COUNT: 1
         })
@@ -341,7 +348,7 @@ export function createHover(map: Map, options: HoverOptions = {}) {
               features.forEach((f) => f.set('wms_layer_source', layer))
 
               // 找到了 WMS 数据
-              handleResult(features, layer as Layer, coordinate)
+              handleResult(features, layer as Layer, evt)
               return // 找到一个就停止，避免 WMS 重叠闪烁
             }
           } catch (e) {

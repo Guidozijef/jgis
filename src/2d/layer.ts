@@ -6,8 +6,19 @@ import { circular } from 'ol/geom/Polygon'
 import Feature, { FeatureLike } from 'ol/Feature'
 import { Cluster, Vector as VectorSource, TileWMS, XYZ } from 'ol/source'
 import { GeoJSON } from 'ol/format'
-import Overlay from 'ol/Overlay'
-import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult, XYZOptions, getFirstParams } from './types'
+import Overlay, { Positioning } from 'ol/Overlay'
+import type {
+  LayerOptions,
+  MapInstance,
+  GeoJsonLike,
+  OverlayResult,
+  WmsOptions,
+  XYZOptions,
+  styleOptions,
+  LayerInput,
+  LayerConfig,
+  OverlayOptions
+} from './types'
 import { circle as tCircle } from '@turf/turf'
 import { createSourceByWms, createSources } from './source'
 import { getLonLat } from './utils'
@@ -87,18 +98,16 @@ export function changeBaseLayer(map: Map, layerName: string, options: XYZOptions
  * @param options 配置项
  * @returns 图层
  */
-export function createLayer(map: Map, layerName: string, data: any, options: LayerOptions): Layer {
-  if (!options || !options.type) {
-    options = Object.assign({}, data, options)
-  }
-  const type = options.type || 'Point'
+export function createLayer(map: Map, layerName: string, data: any, opts: LayerInput): Layer {
+  const options = {
+    type: 'Point', // 默认值
+    ...opts // 用户选项覆盖
+  } as LayerConfig // 这里使用一次断言，明确告诉 TS 这是一个合法的配置对象
+  const type = options.type
   let layer
   switch (type) {
     case 'GeoJSON':
       layer = createJSONLayer(layerName, data, map, options)
-      break
-    case 'Wms':
-      layer = createWmsLayer(layerName, map, options)
       break
     case 'Point':
     case 'LineString':
@@ -109,9 +118,6 @@ export function createLayer(map: Map, layerName: string, data: any, options: Lay
       break
     case 'Circle':
       layer = createBufferCircle(layerName, data, map, options)
-      break
-    case 'Overlay':
-      layer = createOverlayLayer(layerName, map, options)
       break
   }
   return layer
@@ -141,7 +147,7 @@ export function removeLayer(map: Map, layerName: string | string[]): void {
  * @param options 图层配置
  * @returns {VectorLayer} 矢量图层
  */
-export function createJSONLayer(layerName: string, geoJson: GeoJsonLike, Map: MapInstance, options: LayerOptions): VectorLayer {
+export function createJSONLayer(layerName: string, geoJson: GeoJsonLike, Map: MapInstance, options: LayerOptions['GeoJSON']): VectorLayer {
   console.log(typeof geoJson, geoJson) // 检查类型和内容
   const features = new GeoJSON().readFeatures(geoJson, {
     dataProjection: 'EPSG:4326',
@@ -167,7 +173,7 @@ export function createJSONLayer(layerName: string, geoJson: GeoJsonLike, Map: Ma
  * @param options 图层配置
  * @returns {TileLayer} 矢量图层
  */
-export function createWmsLayer(layerName: string, Map: MapInstance, options: LayerOptions): TileLayer<TileWMS> {
+export function createWmsLayer(Map: MapInstance, layerName: string, options: WmsOptions): TileLayer<TileWMS> {
   const layer = new TileLayer<TileWMS>({
     opacity: options.opacity || 1,
     source: createSourceByWms(layerName, options),
@@ -186,10 +192,15 @@ export function createWmsLayer(layerName: string, Map: MapInstance, options: Lay
  * @param options 图层配置
  * @returns {TileLayer} 矢量图层
  */
-export function createVectorLayer(layerName: string, data: any[], Map: MapInstance, options: LayerOptions): VectorLayer {
+export function createVectorLayer<T extends 'Point' | 'LineString' | 'MultiLineString' | 'Polygon' | 'MultiPolygon'>(
+  layerName: string,
+  data: any[],
+  Map: MapInstance,
+  options: LayerOptions[T] & { type?: T }
+): VectorLayer {
   if (!data || data.length === 0) return null
   const layer = new VectorLayer({
-    source: createSources(layerName, data, options),
+    source: createSources<T>(layerName, data, options),
     style: generateStyle(layerName, options),
     zIndex: options.zIndex || 10
   })
@@ -207,7 +218,7 @@ export function createVectorLayer(layerName: string, data: any[], Map: MapInstan
  * @param options 图层配置
  * @returns {TileLayer} 矢量图层
  */
-export function createBufferCircle(layerName: string, data: any, Map: MapInstance, options: LayerOptions): VectorLayer {
+export function createBufferCircle(layerName: string, data: any, Map: MapInstance, options: LayerOptions['Circle'] & { type?: any }): VectorLayer {
   const coordinate = getLonLat(data)
   const circleFeature = tCircle(coordinate, options.radius, { steps: 300, units: 'meters' })
 
@@ -228,7 +239,7 @@ export function createBufferCircle(layerName: string, data: any, Map: MapInstanc
   source.addFeature(turfCircleFeatureNorth as Feature<Geometry>)
   const layer = new VectorLayer({
     source: source,
-    style: generateStyle(layerName, options),
+    style: generateStyle(layerName, options, 'Circle'),
     zIndex: options.zIndex ? options.zIndex : 10
   })
   layer.set('name', layerName)
@@ -244,7 +255,7 @@ export function createBufferCircle(layerName: string, data: any, Map: MapInstanc
  * @param options 图层配置
  * @returns OverlayResult
  */
-export function createOverlayLayer(layerName: string, Map: MapInstance, options: LayerOptions): OverlayResult {
+export function createOverlay(Map: MapInstance, layerName: string, options: OverlayOptions): OverlayResult {
   const div = document.createElement('div')
   const overlay = new Overlay({
     element: div,
@@ -263,10 +274,10 @@ export function createOverlayLayer(layerName: string, Map: MapInstance, options:
  * @param options 配置项
  * @returns VectorLayer
  */
-export function createBlankLayer(map: Map, layerName: string, options: LayerOptions): VectorLayer {
+export function createBlankLayer(map: Map, layerName: string, options?: styleOptions): VectorLayer {
   const layer = new VectorLayer({
     source: new VectorSource({ wrapX: false }),
-    zIndex: options.zIndex ? options.zIndex : 10,
+    zIndex: options?.zIndex ? options.zIndex : 10,
     style: generateStyle(layerName, options)
   })
   layer.set('name', layerName)

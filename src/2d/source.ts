@@ -1,7 +1,7 @@
 import { Point, LineString, MultiLineString, Circle as OLCircle, MultiPolygon, Polygon, Geometry } from 'ol/geom'
 import Feature from 'ol/Feature'
 import { Cluster, Vector as VectorSource, TileWMS } from 'ol/source'
-import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult } from './types'
+import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult, WmsOptions } from './types'
 import { getLonLat } from './utils'
 import { getLayerByName } from './layer'
 import { Map } from 'ol'
@@ -13,14 +13,14 @@ import { Map } from 'ol'
  * @param options 配置项
  * @returns 数据源
  */
-export function createSources(layerName: string, data: any[], options: LayerOptions): VectorSource {
+export function createSources<T extends keyof LayerOptions>(layerName: string, data: any[], options: LayerOptions[T] & { type?: T }): VectorSource {
   const features: Feature<Geometry>[] = []
   let geometry: Geometry | undefined
   const type = options.type || 'Point'
   data.forEach((item) => {
     switch (type) {
       case 'Point':
-        geometry = createPoint(item)
+        geometry = createPoint(item, options)
         break
       case 'LineString':
         geometry = createLineString(item)
@@ -57,19 +57,20 @@ export function createSources(layerName: string, data: any[], options: LayerOpti
  * @param options 配置项
  * @returns TileWMS数据源
  */
-export function createSourceByWms(data: any, options: LayerOptions): TileWMS {
+export function createSourceByWms(data: any, options: WmsOptions): TileWMS {
+  let CQL_FILTER = ''
   if (options.cqlFilter) {
     if (options.cqlFilter) {
-      options.CQL_FILTER += ` and ${options.cqlFilter}`
+      CQL_FILTER += ` and ${options.cqlFilter}`
     } else {
-      options.CQL_FILTER = options.cqlFilter
+      CQL_FILTER = options.cqlFilter
     }
   }
   return new TileWMS({
     url: options.url,
     params: {
       LAYERS: options.layers,
-      CQL_FILTER: options.CQL_FILTER
+      CQL_FILTER: CQL_FILTER
     },
     serverType: 'geoserver',
     crossOrigin: 'anonymous'
@@ -86,8 +87,8 @@ export function getSourceByName(map: Map, layerName: string): any {
   return layer?.getSource()
 }
 
-function createPoint(data: any): Point | undefined {
-  const lonLat = getLonLat(data)
+function createPoint(data: any, options?: any): Point | undefined {
+  const lonLat = getLonLat(data, options)
   if (lonLat) {
     return new Point(lonLat)
   }

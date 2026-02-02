@@ -58,8 +58,8 @@ export function createMap(el, options: any = {}): Map {
  * @param options 配置项
  * @returns 图层
  */
-export function addMarker(map: Map, layerName: string, data: any, options?: LayerOptions) {
-  createLayer(map, layerName, data, { ...options, type: 'Point' })
+export function addMarker(map: Map, layerName: string, data: any, options?: LayerOptions['Point']) {
+  return createLayer(map, layerName, data, { ...options, type: 'Point' })
 }
 
 /**
