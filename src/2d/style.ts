@@ -1,7 +1,8 @@
 import type { StyleLike, StyleFunction } from 'ol/style/Style'
 import { Style, Fill, Stroke, Circle as CircleStyle } from 'ol/style'
+import { styleOptions } from './types'
 
-export function generateStyle(layerName: string, options: any, type: string = 'Point'): StyleLike | null {
+export function generateStyle(layerName: string, options: styleOptions, type: string = 'Point'): StyleLike | null {
   let styleFn: StyleLike | null = null
   if (options.style) {
     styleFn = options.style

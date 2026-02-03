@@ -10,6 +10,8 @@ import { Source, TileWMS, XYZ } from 'ol/source'
 import { Projection } from 'ol/proj'
 import TileLayer from 'ol/layer/Tile'
 import { Positioning } from 'ol/Overlay'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
 
 export interface BaseLayerOptions {
   token?: string
@@ -41,6 +43,7 @@ export interface styleOptions {
   style?: Style
   getStyle?: (layerName: string, feature: FeatureLike, resolution: number) => void | Style | Style[]
   zIndex?: number
+  visible?: boolean
 }
 
 export interface WmsOptions {
@@ -49,6 +52,15 @@ export interface WmsOptions {
   layers: string
   zIndex?: number
   opacity?: number
+  visible?: boolean
+}
+
+export interface WfsOptions {
+  url: string | ((extent: number[]) => string)
+  projection?: string
+  zIndex?: number
+  opacity?: number
+  visible?: boolean
 }
 
 export type OverlayOptions = { positioning?: Positioning }
@@ -116,9 +128,11 @@ export type Asyncify<T> = {
 export interface MapContext {
   getTargetId: () => string
   getInstance: () => MapInstance
+  getTargetElement: () => HTMLElement
   addMarker: (layerName: string, data: Record<string, any>[], options?: LayerOptions['Point']) => Layer
   createLayer: (layerName: string, data: any, options?: LayerInput) => Layer
   createWmsLayer: (layerName: string, data: any, options?: WmsOptions) => TileLayer<TileWMS>
+  createWfsLayer: (layerName: string, data: any, options?: WfsOptions) => VectorLayer<VectorSource>
   createOverlay: (layerName: string, data: any, options?: OverlayOptions) => OverlayResult
   createBlankLayer: (layerName: string, options?: styleOptions) => Layer
   changeBaseLayer: (layerName: string, options: XYZOptions) => TileLayer<XYZ>

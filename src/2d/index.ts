@@ -10,6 +10,7 @@ import {
   getLayerByName,
   visibleLayer,
   createWmsLayer,
+  createWfsLayer,
   createOverlay
 } from './layer'
 import { getSourceByName } from './source'
@@ -30,13 +31,16 @@ import {
   WmsOptions,
   OverlayOptions,
   XYZOptions,
-  OverlayResult
+  OverlayResult,
+  WfsOptions
 } from './types'
 import { FeatureLike } from 'ol/Feature'
 import { getLonLat, findFeature, lightFeature, flashFeature } from './utils'
 import { TileWMS, XYZ } from 'ol/source'
 import TileLayer from 'ol/layer/Tile'
 import { Positioning } from 'ol/Overlay'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
 
 /**
  * 创建地图
@@ -51,9 +55,11 @@ export function useMap(el: string, config: mapConfigOptions): MapContext {
   const context: MapContext = {
     getTargetId: (): string => el,
     getInstance: (): MapInstance => map, // 暴露原始实例以备不时之需
+    getTargetElement: () => map.getTargetElement(),
     addMarker: (layerName: string, data: any, options?: LayerOptions['Point']) => addMarker(map, layerName, data, options),
     createLayer: (layerName: string, data: any, options?: LayerInput) => createLayer(map, layerName, data, options),
     createWmsLayer: (layerName: string, options?: WmsOptions): TileLayer<TileWMS> => createWmsLayer(map, layerName, options),
+    createWfsLayer: (layerName: string, options?: WfsOptions): VectorLayer<VectorSource> => createWfsLayer(map, layerName, options),
     createOverlay: (layerName: string, options?: OverlayOptions): OverlayResult => createOverlay(map, layerName, options),
     createBlankLayer: (layerName: string, options?: styleOptions) => createBlankLayer(map, layerName, options),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(map, layerName, visible),

@@ -17,10 +17,11 @@ import type {
   styleOptions,
   LayerInput,
   LayerConfig,
-  OverlayOptions
+  OverlayOptions,
+  WfsOptions
 } from './types'
 import { circle as tCircle } from '@turf/turf'
-import { createSourceByWms, createSources } from './source'
+import { createSourceByWfs, createSourceByWms, createSources } from './source'
 import { getLonLat } from './utils'
 import { FeatureType } from 'ol/format/WFS'
 import { generateStyle } from './style'
@@ -158,7 +159,8 @@ export function createJSONLayer(layerName: string, geoJson: GeoJsonLike, Map: Ma
   const layer = new VectorLayer({
     source,
     style: generateStyle(layerName, options),
-    zIndex: options.zIndex || 10
+    zIndex: options.zIndex || 10,
+    visible: options.visible !== false
   })
   layer.set('name', layerName)
   layer.set('type', 'webgl')
@@ -177,7 +179,28 @@ export function createWmsLayer(Map: MapInstance, layerName: string, options: Wms
   const layer = new TileLayer<TileWMS>({
     opacity: options.opacity || 1,
     source: createSourceByWms(layerName, options),
-    zIndex: options.zIndex || 10
+    zIndex: options.zIndex || 10,
+    visible: options.visible !== false
+  })
+  layer.set('name', layerName)
+  Map.addLayer(layer)
+  return layer
+}
+
+/**
+ * 根据WFS服务创建图层
+ * @param layerName 图层名称
+ * @param Map 地图实例
+ * @param options 图层配置
+ * @returns {VectorLayer} 矢量图层
+ */
+export function createWfsLayer(Map: MapInstance, layerName: string, options: WfsOptions): VectorLayer<VectorSource> {
+  const layer = new VectorLayer<VectorSource>({
+    opacity: options.opacity || 1,
+    source: createSourceByWfs(layerName, options),
+    style: generateStyle(layerName, options),
+    zIndex: options.zIndex || 10,
+    visible: options.visible !== false
   })
   layer.set('name', layerName)
   Map.addLayer(layer)
@@ -202,7 +225,8 @@ export function createVectorLayer<T extends 'Point' | 'LineString' | 'MultiLineS
   const layer = new VectorLayer({
     source: createSources<T>(layerName, data, options),
     style: generateStyle(layerName, options),
-    zIndex: options.zIndex || 10
+    zIndex: options.zIndex || 10,
+    visible: options.visible !== false
   })
   layer.set('name', layerName)
   layer.set('type', 'webgl')

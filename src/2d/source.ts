@@ -1,10 +1,11 @@
 import { Point, LineString, MultiLineString, Circle as OLCircle, MultiPolygon, Polygon, Geometry } from 'ol/geom'
 import Feature from 'ol/Feature'
 import { Cluster, Vector as VectorSource, TileWMS } from 'ol/source'
-import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult, WmsOptions } from './types'
+import type { LayerOptions, MapLike, MapInstance, GeoJsonLike, OverlayResult, WmsOptions, WfsOptions } from './types'
 import { getLonLat } from './utils'
 import { getLayerByName } from './layer'
 import { Map } from 'ol'
+import GeoJSON from 'ol/format/GeoJSON.js'
 
 /**
  * 创建数据源
@@ -74,6 +75,15 @@ export function createSourceByWms(data: any, options: WmsOptions): TileWMS {
     },
     serverType: 'geoserver',
     crossOrigin: 'anonymous'
+  })
+}
+
+export function createSourceByWfs(data: any, options: WfsOptions): VectorSource {
+  return new VectorSource({
+    format: new GeoJSON(),
+    url: function (extent) {
+      return typeof options.url === 'function' ? options.url(extent) : options.url
+    }
   })
 }
 
