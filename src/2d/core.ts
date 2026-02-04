@@ -10,7 +10,7 @@ import { defaults as defaultControls } from 'ol/control'
  * @param options 地图配置
  * @returns {Map}
  */
-export function createMap(el, options: any = {}): Map {
+export function createMap(el, options: mapConfigOptions = {}): Map {
   if (!el && !el.target) {
     throw new Error('is not a valid element')
   }
@@ -21,8 +21,8 @@ export function createMap(el, options: any = {}): Map {
   const defaultOptions = {
     zoom: 10,
     center: [104.064839, 30.548857],
-    minZoom: 2,
-    maxZoom: 19,
+    minZoom: 1,
+    maxZoom: 20,
     projection: 'EPSG:4326'
   }
   const mapOptions = Object.assign(defaultOptions, options)

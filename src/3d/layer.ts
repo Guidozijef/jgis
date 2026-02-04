@@ -237,7 +237,7 @@ export function createBlankLayer(viewer: Cesium.Viewer, layerName: string): Cesi
  * @param options 配置项
  * @returns {Cesium.UrlTemplateImageryProvider}
  */
-export function changeBaseLayer(viewer: Cesium.Viewer, layerName: string, options: { url: string }): Cesium.UrlTemplateImageryProvider {
+export function customBaseLayer(viewer: Cesium.Viewer, layerName: string, options: { url: string }): Cesium.UrlTemplateImageryProvider {
   removeLayer(viewer, ['base-ibo-layer', 'base-cia-layer', 'base-img-layer'])
   const layer = new Cesium.UrlTemplateImageryProvider({
     url: options.url,

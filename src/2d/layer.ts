@@ -26,7 +26,7 @@ import { getLonLat } from './utils'
 import { FeatureType } from 'ol/format/WFS'
 import { generateStyle } from './style'
 import { removeLayerByName } from './utils'
-import { BaseLayerOptions } from './types'
+import { BaseLayerOptions, mapType } from './types'
 
 /**
  * 创建底图
@@ -36,12 +36,16 @@ import { BaseLayerOptions } from './types'
  */
 export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileLayer<XYZ> {
   const TOKEN = options.token || 'dadcbbdb5206b626a29ca739686b3087'
-  const baseType = options.baseType || 'img'
-  const noteType = options.noteType || 'cia'
+  const baseTypeMap = {
+    img: ['img', 'cia'],
+    vec: ['vec', 'cva'],
+    ter: ['ter', 'cta']
+  }
+  const baseType = baseTypeMap[options.baseType || 'vec']
   const layer = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({
-      url: `http://t0.tianditu.com/DataServer?T=${baseType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      url: `http://t0.tianditu.com/DataServer?T=${baseType[0]}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
@@ -51,7 +55,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   const layerNote = new TileLayer({
     className: 'tdt-baseNote-layer',
     source: new XYZ({
-      url: `http://t0.tianditu.com/DataServer?T=${noteType}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
+      url: `http://t0.tianditu.com/DataServer?T=${baseType[1]}_w&x={x}&y={y}&l={z}&tk=${TOKEN}`,
       maxZoom: options.maxZoom || 18,
       minZoom: options.minZoom || 2
     }),
@@ -63,6 +67,11 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
   return layer
 }
 
+export function setBaseLayer(map: Map, baseType: mapType, options?: BaseLayerOptions) {
+  removeLayer(map, ['tdt-base-layer', 'tdt-baseNote-layer'])
+  createBaseLayer(map, { ...options, baseType })
+}
+
 /**
  * 修改图层
  * @param map 地图实例
@@ -70,7 +79,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
  * @param options 配置项
  * @returns {TileLayer<XYZ>}
  */
-export function changeBaseLayer(map: Map, layerName: string, options: XYZOptions): TileLayer<XYZ> {
+export function customBaseLayer(map: Map, layerName: string, options: XYZOptions): TileLayer<XYZ> {
   removeLayer(map, ['tdt-base-layer', 'tdt-baseNote-layer'])
   const layer = new TileLayer({
     className: `${layerName}-base-layer`,
@@ -219,7 +228,7 @@ export function createVectorLayer<T extends 'Point' | 'LineString' | 'MultiLineS
   layerName: string,
   data: any[],
   Map: MapInstance,
-  options: LayerOptions[T] & { type?: T }
+  options: LayerOptions[T]
 ): VectorLayer {
   if (!data || data.length === 0) return null
   const layer = new VectorLayer({
@@ -242,7 +251,7 @@ export function createVectorLayer<T extends 'Point' | 'LineString' | 'MultiLineS
  * @param options 图层配置
  * @returns {TileLayer} 矢量图层
  */
-export function createBufferCircle(layerName: string, data: any, Map: MapInstance, options: LayerOptions['Circle'] & { type?: any }): VectorLayer {
+export function createBufferCircle(layerName: string, data: any, Map: MapInstance, options: LayerOptions['Circle']): VectorLayer {
   const coordinate = getLonLat(data)
   const circleFeature = tCircle(coordinate, options.radius, { steps: 300, units: 'meters' })
 

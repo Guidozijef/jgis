@@ -18,17 +18,17 @@ export interface BaseLayerOptions {
   maxZoom?: number
   minZoom?: number
   zIndex?: number
-  baseType?: string
-  noteType?: string
+  baseType?: mapType
 }
 
 export interface mapConfigOptions {
+  target?: string
   projection?: string
   center?: number[]
   zoom?: number
   minZoom?: number
   maxZoom?: number
-  baseLayers: BaseLayerOptions
+  baseLayers?: BaseLayerOptions
 }
 
 export interface FeatureCallbackParams {
@@ -117,6 +117,8 @@ export interface flyOptions {
   easing?: (t: number) => number
 }
 
+export type mapType = 'ver' | 'img' | 'ter'
+
 export type Asyncify<T> = {
   [K in keyof T]: T[K] extends (...args: infer A) => infer R
     ? T[K] extends <K2 extends any>(...args: any) => any
@@ -135,7 +137,8 @@ export interface MapContext {
   createWfsLayer: (layerName: string, data: any, options?: WfsOptions) => VectorLayer<VectorSource>
   createOverlay: (layerName: string, data: any, options?: OverlayOptions) => OverlayResult
   createBlankLayer: (layerName: string, options?: styleOptions) => Layer
-  changeBaseLayer: (layerName: string, options: XYZOptions) => TileLayer<XYZ>
+  customBaseLayer: (layerName: string, options: XYZOptions) => TileLayer<XYZ>
+  setBaseLayer: (mapType: mapType, options?: BaseLayerOptions) => void
   removeLayer: (layerName: string | string[]) => void
   visibleLayer: (layerName: string, visible: boolean) => Layer
   getLayerByName: (layerName: string) => Layer

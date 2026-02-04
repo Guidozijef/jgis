@@ -1,9 +1,10 @@
 import * as Cesium from 'cesium'
 import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, findGraphic, setView, destroyMap } from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
-import { createBaseLayer, createBlankLayer, createLayer, changeBaseLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
-import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, mapConfigOptions, MapContext, optionsMap } from './types'
+import { createBaseLayer, createBlankLayer, createLayer, customBaseLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
+import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, mapConfigOptions, MapContext, mapType, optionsMap } from './types'
 import { getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced, onMapReady as onMapReadyed, registerMap } from './store'
+import { setBaseLayer } from './baseMap'
 
 /**
  * 创建地图
@@ -25,7 +26,8 @@ export function useMap(el: string, options: mapConfigOptions): MapContext {
     createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }): Cesium.Primitive =>
       createLayer(viewer, layerName, data, options),
     removeLayer: (layerName: string) => removeLayer(viewer, layerName),
-    changeBaseLayer: (layerName: string, options: { url: string }) => changeBaseLayer(viewer, layerName, options),
+    setBaseLayer: (mapType: mapType, options?: { token?: string }) => setBaseLayer(viewer, mapType, options),
+    customBaseLayer: (layerName: string, options: { url: string }) => customBaseLayer(viewer, layerName, options),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(viewer, layerName, visible),
     getLayerByName: (layerName: string): Cesium.BillboardCollection | Cesium.EntityCollection => getLayerByName(viewer, layerName),
     findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number): Cesium.Billboard | Cesium.Entity =>

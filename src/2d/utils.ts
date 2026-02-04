@@ -1,4 +1,4 @@
-import { Map } from 'ol'
+import { Map, Overlay } from 'ol'
 import type { Feature } from 'ol'
 import type { FeatureLike } from 'ol/Feature'
 import type { Layer } from 'ol/layer'
@@ -52,7 +52,11 @@ export function removeLayerByName(map: Map, layerName: string) {
       if ('dispose' in layer) {
         ;(layer as any).dispose()
       }
-      map.removeLayer(layer)
+      if (layer instanceof Overlay) {
+        map.removeOverlay(layer)
+      } else {
+        map.removeLayer(layer)
+      }
     }
   })
 }

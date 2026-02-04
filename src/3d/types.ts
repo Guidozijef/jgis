@@ -71,6 +71,8 @@ export type billboardOptions = Omit<Cesium.Billboard.ConstructorOptions, 'positi
 
 export type Coordinates = [number, number, number]
 
+export type mapType = 'ver' | 'img' | 'ter'
+
 export type Asyncify<T> = {
   [K in keyof T]: T[K] extends (...args: infer A) => infer R
     ? T[K] extends <K2 extends any>(...args: any) => any
@@ -84,7 +86,8 @@ export interface MapContext {
   getInstance: () => Cesium.Viewer
   addMarker: (layerName: string, data: Record<string, any>, options: optionsMap['Point']) => void
   createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
-  changeBaseLayer: (layerName: string, options: { url: string }) => void
+  setBaseLayer: (mapType: mapType, options?: { token?: string }) => void
+  customBaseLayer: (layerName: string, options: { url: string }) => void
   removeLayer: (layerName: string) => void
   visibleLayer: (layerName: string, visible: boolean) => void
   getLayerByName: (layerName: string) => Cesium.BillboardCollection | Cesium.EntityCollection

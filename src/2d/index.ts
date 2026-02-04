@@ -6,7 +6,8 @@ import {
   createLayer,
   removeLayer,
   createBlankLayer,
-  changeBaseLayer,
+  customBaseLayer,
+  setBaseLayer,
   getLayerByName,
   visibleLayer,
   createWmsLayer,
@@ -32,7 +33,9 @@ import {
   OverlayOptions,
   XYZOptions,
   OverlayResult,
-  WfsOptions
+  WfsOptions,
+  mapType,
+  BaseLayerOptions
 } from './types'
 import { FeatureLike } from 'ol/Feature'
 import { getLonLat, findFeature, lightFeature, flashFeature } from './utils'
@@ -63,7 +66,8 @@ export function useMap(el: string, config: mapConfigOptions): MapContext {
     createOverlay: (layerName: string, options?: OverlayOptions): OverlayResult => createOverlay(map, layerName, options),
     createBlankLayer: (layerName: string, options?: styleOptions) => createBlankLayer(map, layerName, options),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(map, layerName, visible),
-    changeBaseLayer: (layerName: string, options: XYZOptions): TileLayer<XYZ> => changeBaseLayer(map, layerName, options),
+    customBaseLayer: (layerName: string, options: XYZOptions): TileLayer<XYZ> => customBaseLayer(map, layerName, options),
+    setBaseLayer: (mapType: mapType, options?: BaseLayerOptions) => setBaseLayer(map, mapType, options),
     removeLayer: (layerName: string | string[]) => removeLayer(map, layerName),
     getLonLat: (data: any) => getLonLat(data),
     getLayerByName: (layerName: string) => getLayerByName(map, layerName),

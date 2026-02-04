@@ -1,7 +1,7 @@
 {
   "name": "jgis",
-  "version": "1.0.9",
-  "description": "快速创建二维、三维工具库",
+  "version": "1.0.10",
+  "description": "基于函数式编程的轻量级 GIS 开发框架，快速创建二维、三维工具库",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
