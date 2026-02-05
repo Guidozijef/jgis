@@ -1,5 +1,5 @@
 // JGis 地图相关类型定义
-import { Map, Feature, MapBrowserEvent } from 'ol'
+import { Map, Feature, Overlay } from 'ol'
 import { Select } from 'ol/interaction'
 import { StyleLike } from 'ol/style/Style'
 import { Layer } from 'ol/layer'
@@ -12,6 +12,19 @@ import TileLayer from 'ol/layer/Tile'
 import { Positioning } from 'ol/Overlay'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
+import BaseLayer from 'ol/layer/Base'
+
+export interface TrackAnimationOptions {
+  path: number[][]
+  duration?: number
+  style?: {
+    icon?: string
+    offset?: [number, number]
+    autoRotate?: boolean
+  }
+  showPath?: boolean
+  loop?: boolean
+}
 
 export interface BaseLayerOptions {
   token?: string
@@ -63,7 +76,7 @@ export interface WfsOptions {
   visible?: boolean
 }
 
-export type OverlayOptions = { positioning?: Positioning }
+export type OverlayOptions = { offset?: [number, number]; positioning?: Positioning }
 
 interface CircleOptions {
   radius: number
@@ -105,8 +118,10 @@ export type GeoJsonLike = any // 可根据实际情况细化
 export type customFeature = { running: boolean; clearFlash: () => void }
 
 export interface OverlayResult {
-  overlayer: import('ol/Overlay').default
-  content: HTMLDivElement
+  overlay: import('ol/Overlay').default
+  element: HTMLDivElement
+  setPosition: (coordinate: [number, number]) => void
+  setOffset: (offset: [number, number]) => void
 }
 
 export interface flyOptions {
@@ -117,7 +132,7 @@ export interface flyOptions {
   easing?: (t: number) => number
 }
 
-export type mapType = 'ver' | 'img' | 'ter'
+export type mapType = 'vec' | 'img' | 'ter'
 
 export type Asyncify<T> = {
   [K in keyof T]: T[K] extends (...args: infer A) => infer R
@@ -133,9 +148,9 @@ export interface MapContext {
   getTargetElement: () => HTMLElement
   addMarker: (layerName: string, data: Record<string, any>[], options?: LayerOptions['Point']) => Layer
   createLayer: (layerName: string, data: any, options?: LayerInput) => Layer
-  createWmsLayer: (layerName: string, data: any, options?: WmsOptions) => TileLayer<TileWMS>
-  createWfsLayer: (layerName: string, data: any, options?: WfsOptions) => VectorLayer<VectorSource>
-  createOverlay: (layerName: string, data: any, options?: OverlayOptions) => OverlayResult
+  createWmsLayer: (layerName: string, options?: WmsOptions) => TileLayer<TileWMS>
+  createWfsLayer: (layerName: string, options?: WfsOptions) => VectorLayer<VectorSource>
+  createOverlay: (layerName: string, options?: OverlayOptions) => OverlayResult
   createBlankLayer: (layerName: string, options?: styleOptions) => Layer
   customBaseLayer: (layerName: string, options: XYZOptions) => TileLayer<XYZ>
   setBaseLayer: (mapType: mapType, options?: BaseLayerOptions) => void
@@ -149,6 +164,10 @@ export interface MapContext {
   findFeature: (layerName: string, properties: any) => FeatureLike
   createSelect: (options: SelectOptions) => UseSelectResult
   createHover: (options: HoverOptions) => UseHoverResult
+  getAllLayer: (map: MapInstance) => (BaseLayer | Overlay)[]
+  getAllOverlay: (map: MapInstance) => Overlay[]
+  getFeatures: (layerName: string) => FeatureLike[]
+  trackAnimation: (path: number[][], options: TrackAnimationOptions) => void
   flyTo: (coordinate: [number, number], options: flyOptions) => Promise<boolean>
   flyToByExtent: (options: flyOptions) => Promise<boolean>
   flyToByFeature: (feature: Feature, options: flyOptions) => Promise<boolean>

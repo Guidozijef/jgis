@@ -282,23 +282,30 @@ export function createBufferCircle(layerName: string, data: any, Map: MapInstanc
 }
 
 /**
- * 创建Overlay图层
+ * 创建覆盖物图层
  * @param layerName 图层名称
  * @param Map 地图实例
  * @param options 图层配置
  * @returns OverlayResult
  */
-export function createOverlay(Map: MapInstance, layerName: string, options: OverlayOptions): OverlayResult {
+export function createOverlay(Map: MapInstance, layerName: string, options?: OverlayOptions): OverlayResult {
   const div = document.createElement('div')
   const overlay = new Overlay({
+    offset: options?.offset || [0, 0],
+    className: `jgis-overlay ${layerName}-overlay`,
     element: div,
     stopEvent: false,
-    positioning: options.positioning || 'bottom-center'
+    positioning: options?.positioning || 'bottom-center'
   })
   overlay.set('name', layerName)
   overlay.set('type', 'webgl')
   Map.addOverlay(overlay)
-  return { overlayer: overlay, content: div }
+  return {
+    overlay,
+    element: div,
+    setOffset: (offset: [number, number]) => overlay.setOffset(offset),
+    setPosition: (coordinate: [number, number]) => overlay.setPosition(coordinate)
+  }
 }
 
 /**

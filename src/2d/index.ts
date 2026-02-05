@@ -1,4 +1,5 @@
-import { Feature } from 'ol'
+import { Feature, Overlay } from 'ol'
+import BaseLayer from 'ol/layer/Base'
 import { createMap, addMarker, flyTo, flyToByExtent, flyToByFeature, getProjection, setZoom, getZoom, destroyMap } from './core'
 import { registerMap, onMapReady as onMapReadyed, getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced } from './store'
 import {
@@ -35,10 +36,12 @@ import {
   OverlayResult,
   WfsOptions,
   mapType,
+  TrackAnimationOptions,
   BaseLayerOptions
 } from './types'
 import { FeatureLike } from 'ol/Feature'
-import { getLonLat, findFeature, lightFeature, flashFeature } from './utils'
+import { trackAnimation } from './animation'
+import { getLonLat, findFeature, lightFeature, flashFeature, getAllLayer, getAllOverlay, getFeatures } from './utils'
 import { TileWMS, XYZ } from 'ol/source'
 import TileLayer from 'ol/layer/Tile'
 import { Positioning } from 'ol/Overlay'
@@ -68,6 +71,7 @@ export function useMap(el: string, config: mapConfigOptions): MapContext {
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(map, layerName, visible),
     customBaseLayer: (layerName: string, options: XYZOptions): TileLayer<XYZ> => customBaseLayer(map, layerName, options),
     setBaseLayer: (mapType: mapType, options?: BaseLayerOptions) => setBaseLayer(map, mapType, options),
+    trackAnimation: (path: number[][], options: TrackAnimationOptions) => trackAnimation(map, path, options),
     removeLayer: (layerName: string | string[]) => removeLayer(map, layerName),
     getLonLat: (data: any) => getLonLat(data),
     getLayerByName: (layerName: string) => getLayerByName(map, layerName),
@@ -78,6 +82,9 @@ export function useMap(el: string, config: mapConfigOptions): MapContext {
     lightFeature: (layerName: string, feature: FeatureLike, options: HighLightOptions, zoomFlag: boolean) =>
       lightFeature(layerName, feature, options, zoomFlag),
     flashFeature: (layerName: string, feature: FeatureLike & customFeature, options: FlashOptions) => flashFeature(layerName, feature, options),
+    getAllLayer: (): (BaseLayer | Overlay)[] => getAllLayer(map),
+    getAllOverlay: (): Overlay[] => getAllOverlay(map),
+    getFeatures: (layerName: string): FeatureLike[] => getFeatures(map, layerName),
     flyTo: (coordinate: [number, number], options: flyOptions): Promise<boolean> => flyTo(map, coordinate, options),
     flyToByExtent: (options: flyOptions): Promise<boolean> => flyToByExtent(map, options),
     flyToByFeature: (feature: Feature, options: flyOptions): Promise<boolean> => flyToByFeature(map, feature, options),

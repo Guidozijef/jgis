@@ -7,6 +7,7 @@ import { TileWMS, ImageWMS } from 'ol/source'
 import { customFeature, FlashOptions, HighLightOptions } from './types'
 import { boundingExtent } from 'ol/extent'
 import { getSourceByName } from './source'
+import BaseLayer from 'ol/layer/Base'
 
 type dataType = { lttd?: number; lgtd?: number } & { jd?: number; wd?: number } & {
   latitude?: number
@@ -42,7 +43,7 @@ export function getLonLat(data: dataType, options?: { lonLabel: string; latLabel
  * @param layerName 图层名称
  */
 export function removeLayerByName(map: Map, layerName: string) {
-  const layers = map.getLayers().getArray()
+  const layers = getAllLayer(map)
   layers.forEach((layer) => {
     if (layer.get('name') == layerName) {
       // 只有VectorLayer等才有setSource
@@ -59,6 +60,7 @@ export function removeLayerByName(map: Map, layerName: string) {
       }
     }
   })
+  map.render()
 }
 
 /**
@@ -129,4 +131,37 @@ export function findFeature(map: Map, layerName: string, properties: any): Featu
     return false
   })
   return clickedFeature
+}
+
+/**
+ * 获取所有图层
+ * @param map 地图实例
+ * @returns {BaseLayer[] | Overlay[]} 图层数组
+ */
+export function getAllLayer(map: Map): (BaseLayer | Overlay)[] {
+  const verlayers = map.getLayers().getArray()
+  const overlays = map.getOverlays().getArray()
+  const layers = [...verlayers, ...overlays]
+  return layers
+}
+
+/**
+ * 获取所有覆盖物图层
+ * @param map 地图实例
+ * @returns {Array<Overlay>}
+ */
+export function getAllOverlay(map: Map): Overlay[] {
+  return map.getOverlays().getArray()
+}
+
+/**
+ * 获取图层中的所有要素
+ * @param map 地图实例
+ * @param layerName 图层名称
+ * @returns {FeatureLike[]} 要素数组
+ */
+export function getFeatures(map: Map, layerName: string): FeatureLike[] {
+  const source = getSourceByName(map, layerName)
+  if (!source) return []
+  return source.getFeatures()
 }
