@@ -1,5 +1,5 @@
 import type { StyleLike, StyleFunction } from 'ol/style/Style'
-import { Style, Fill, Stroke, Circle as CircleStyle } from 'ol/style'
+import { Style, Fill, Stroke, Circle as CircleStyle, Text } from 'ol/style'
 import { styleOptions } from './types'
 
 export function generateStyle(layerName: string, options: styleOptions, type: string = 'Point'): StyleLike | null {
@@ -22,12 +22,33 @@ export function generateStyle(layerName: string, options: styleOptions, type: st
 
 function generatePointsStyle() {
   const styleFn = (feature, resolution) => {
-    return new Style({
-      image: new CircleStyle({
-        radius: 5,
-        fill: new Fill({ color: 'red' })
+    const size = feature.get('features').length
+    if (size > 1) {
+      return new Style({
+        image: new CircleStyle({
+          radius: 10,
+          stroke: new Stroke({
+            color: '#fff'
+          }),
+          fill: new Fill({
+            color: '#3399CC'
+          })
+        }),
+        text: new Text({
+          text: size.toString(),
+          fill: new Fill({
+            color: '#fff'
+          })
+        })
       })
-    })
+    } else {
+      return new Style({
+        image: new CircleStyle({
+          radius: 5,
+          fill: new Fill({ color: 'red' })
+        })
+      })
+    }
   }
   return styleFn
 }

@@ -14,7 +14,11 @@ import GeoJSON from 'ol/format/GeoJSON.js'
  * @param options 配置项
  * @returns 数据源
  */
-export function createSources<T extends keyof LayerOptions>(layerName: string, data: any[], options: LayerOptions[T] & { type?: T }): VectorSource {
+export function createSources<T extends keyof LayerOptions>(
+  layerName: string,
+  data: any[],
+  options: LayerOptions[T] & { type?: T }
+): VectorSource | Cluster {
   const features: Feature<Geometry>[] = []
   let geometry: Geometry | undefined
   const type = options.type || 'Point'
@@ -48,6 +52,14 @@ export function createSources<T extends keyof LayerOptions>(layerName: string, d
   const vectorSource = new VectorSource()
   if (features.length > 0) {
     vectorSource.addFeatures(features)
+  }
+  if (type === 'Point' && (options as LayerOptions['Point']).isCluster) {
+    const pOpts = options as LayerOptions['Point']
+    return new Cluster({
+      distance: pOpts.distance || 40,
+      minDistance: pOpts.minDistance || 20,
+      source: vectorSource
+    })
   }
   return vectorSource
 }
@@ -104,6 +116,11 @@ function createPoint(data: any, options?: any): Point | undefined {
   }
 }
 
+// coordinates: [
+//     [-1e7, 1e6],
+//     [-1e6, 3e6],
+//  ]
+
 function createLineString(data: any): LineString {
   return new LineString(data.coordinates)
 }
@@ -111,6 +128,16 @@ function createLineString(data: any): LineString {
 function createMultiLineString(data: any): MultiLineString {
   return new MultiLineString(data.coordinates)
 }
+
+// coordinates: [
+//    [
+//       [-3e6, -1e6],
+//       [-3e6, 1e6],
+//       [-1e6, 1e6],
+//       [-1e6, -1e6],
+//       [-3e6, -1e6],
+//     ],
+//   ]
 
 function createMultiPolygon(data: any): MultiPolygon {
   return new MultiPolygon(data.coordinates)

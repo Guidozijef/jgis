@@ -84,7 +84,7 @@ interface CircleOptions {
 
 export interface LayerOptions {
   GeoJSON: styleOptions
-  Point: styleOptions
+  Point: styleOptions & { isCluster?: boolean; distance?: number; minDistance?: number }
   LineString: styleOptions
   MultiLineString: styleOptions
   Polygon: styleOptions

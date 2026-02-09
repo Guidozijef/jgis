@@ -25,7 +25,7 @@ import { createSourceByWfs, createSourceByWms, createSources } from './source'
 import { getLonLat } from './utils'
 import { FeatureType } from 'ol/format/WFS'
 import { generateStyle } from './style'
-import { removeLayerByName } from './utils'
+import { removeLayerByName, getAllLayer } from './utils'
 import { BaseLayerOptions, mapType } from './types'
 
 /**
@@ -332,7 +332,7 @@ export function createBlankLayer(map: Map, layerName: string, options?: styleOpt
  * @param layerName 图层名称
  */
 export function getLayerByName(map: Map, layerName: string): any {
-  const layers = map.getAllLayers()
+  const layers = getAllLayer(map)
   const layer = layers.find((item) => item.get('name') === layerName)
   return layer
 }
