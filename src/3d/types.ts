@@ -19,7 +19,17 @@ export interface mapConfigOptions {
   terrainUrl?: string
   minZoom?: number
   maxZoom?: number
+  showFrameRate?: boolean
   baseLayers: BaseLayerOptions
+}
+
+export interface CameraInfo {
+  longitude: number
+  latitude: number
+  height: number
+  heading: number
+  pitch: number
+  roll: number
 }
 
 export interface LayerOptions {
@@ -57,7 +67,12 @@ export type ILineOptions = {
 
 export interface optionsMap {
   Point: billboardOptions & { getImage?: Function }
-  EntityPoint: billboardOptions & { getImage?: Function }
+  EntityPoint: billboardOptions & {
+    getImage?: Function
+    labelStyle?: Cesium.LabelGraphics.ConstructorOptions & {
+      getText?: Function
+    }
+  }
   LineString: ILineOptions
   MultiLineString: ILineOptions
   Polygon: any
@@ -67,9 +82,36 @@ export interface optionsMap {
   Overlay: any
 }
 
+export interface OverlayResult {
+  viewer: Cesium.Viewer
+  element: HTMLElement
+  setPosition: (position: Cesium.Cartesian3) => void
+}
+
 export type billboardOptions = Omit<Cesium.Billboard.ConstructorOptions, 'position'>
 
 export type Coordinates = [number, number, number]
+
+export type Coordinates2 = {
+  lng: number
+  lat: number
+  x: number
+  y: number
+  z: number
+  cameraZ: number
+}
+
+export type Extent = {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+}
+
+export type Bounds = {
+  southwest: Pick<Coordinates2, 'lng' | 'lat'>
+  northeast: Pick<Coordinates2, 'lng' | 'lat'>
+}
 
 export type mapType = 'ver' | 'img' | 'ter'
 
@@ -94,10 +136,15 @@ export interface MapContext {
   createBlankLayer: (layerName: string, options: LayerOptions) => Cesium.Primitive
   findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number) => Cesium.Entity | Cesium.Billboard
   createSelect: (options: SelectOptions) => UseSelectResult
+  createOverlay: (layerName: string) => OverlayResult
   createHover: (options: HoverOptions) => UseHoverResult
   flyTo: (coordinate: Coordinates, options: flyOptions) => Promise<boolean>
   flyHome: (duration?: number) => void
   flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions) => Promise<boolean>
+  getCameraView: () => CameraInfo
+  getCenter: () => Omit<Coordinates2, 'lng' | 'lat'>
+  getExtent: () => Extent
+  getViewBounds: () => Bounds
   setView: (coordinate: Coordinates, options?: flyOptions) => void
   destroyMap: (id: string) => void
 }

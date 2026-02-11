@@ -1,8 +1,36 @@
 import * as Cesium from 'cesium'
-import { createViewer, addMarker, flyTo, flyHome, flyToBoundingSphere, findGraphic, setView, destroyMap } from './core'
+import {
+  createViewer,
+  addMarker,
+  flyTo,
+  flyHome,
+  flyToBoundingSphere,
+  findGraphic,
+  setView,
+  destroyMap,
+  getCameraView,
+  getCenter,
+  getExtent,
+  getViewBounds
+} from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
-import { createBaseLayer, createBlankLayer, createLayer, customBaseLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
-import { Asyncify, billboardOptions, Coordinates, flyOptions, LayerOptions, mapConfigOptions, MapContext, mapType, optionsMap } from './types'
+import { createBaseLayer, createBlankLayer, createLayer, createOverlay, customBaseLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
+import {
+  Asyncify,
+  billboardOptions,
+  Bounds,
+  CameraInfo,
+  Coordinates,
+  Coordinates2,
+  Extent,
+  flyOptions,
+  LayerOptions,
+  mapConfigOptions,
+  MapContext,
+  mapType,
+  optionsMap,
+  OverlayResult
+} from './types'
 import { getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced, onMapReady as onMapReadyed, registerMap } from './store'
 import { setBaseLayer } from './baseMap'
 
@@ -34,11 +62,16 @@ export function useMap(el: string, options: mapConfigOptions): MapContext {
       findGraphic(viewer, layerName, data, tolerance),
     createBlankLayer: (layerName: string): Cesium.Primitive => createBlankLayer(viewer, layerName),
     createSelect: (options: SelectOptions): UseSelectResult => createSelect(viewer, options),
+    createOverlay: (layerName: string): OverlayResult => createOverlay(viewer, layerName),
     createHover: (options: HoverOptions): UseHoverResult => createHover(viewer, options),
     flyTo: (coordinate: Coordinates, options?: flyOptions): Promise<boolean> => flyTo(viewer, coordinate, options),
     flyHome: (duration?: number): void => flyHome(viewer, duration),
     flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions): Promise<boolean> =>
       flyToBoundingSphere(viewer, boundingSphere, options),
+    getCameraView: (): CameraInfo => getCameraView(viewer),
+    getCenter: (): Omit<Coordinates2, 'lng' | 'lat'> => getCenter(viewer),
+    getExtent: (): Extent => getExtent(viewer),
+    getViewBounds: (): Bounds => getViewBounds(viewer),
     setView: (coordinate: Coordinates, options?: flyOptions): void => setView(viewer, coordinate, options),
     destroyMap: (id: string): void => destroyMap(viewer, id)
   }

@@ -292,7 +292,7 @@ export function createOverlay(Map: MapInstance, layerName: string, options?: Ove
   const div = document.createElement('div')
   const overlay = new Overlay({
     offset: options?.offset || [0, 0],
-    className: `jgis-overlay ${layerName}-overlay`,
+    className: `jgis-overlay-2d ${layerName}-overlay`,
     element: div,
     stopEvent: false,
     positioning: options?.positioning || 'bottom-center'

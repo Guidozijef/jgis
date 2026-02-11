@@ -1,7 +1,8 @@
 import * as Cesium from 'cesium'
 import { addTDTImageryProvider } from './baseMap'
-import { WmsOptions, ILineOptions, optionsMap, BaseLayerOptions } from './types'
+import { WmsOptions, ILineOptions, optionsMap, BaseLayerOptions, OverlayResult } from './types'
 import { getLonLat } from '../index'
+import { Popup } from './popup'
 
 /**
  * 初始化地图
@@ -73,8 +74,9 @@ export function createPointLayer(viewer: Cesium.Viewer, layerName: string, data:
       scale: 1, // 缩放比例
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM, // 以底部为定位中心
       show: true,
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 高度参考-贴地
       disableDepthTestDistance: Number.POSITIVE_INFINITY, // 禁止深度测试距离
-      scaleByDistance: new Cesium.NearFarScalar(1, 1, 100000, 0.2) // 根据相机距离缩放
+      scaleByDistance: new Cesium.NearFarScalar(2000000, 1, 8000000, 0.1) // 根据相机距离缩放
     }
     const customOptions = {
       position: Cesium.Cartesian3.fromDegrees(...getLonLat(item), 1),
@@ -118,8 +120,9 @@ export function createEntityPointLayer(
       scale: 1, // 缩放比例
       verticalOrigin: Cesium.VerticalOrigin.BOTTOM, // 以底部为定位中心
       show: true,
+      heightReference: Cesium.HeightReference.CLAMP_TO_GROUND, // 高度参考-贴地
       disableDepthTestDistance: Number.POSITIVE_INFINITY, // 禁止深度测试距离
-      scaleByDistance: new Cesium.NearFarScalar(1, 1, 100000, 0.2) // 根据相机距离缩放
+      scaleByDistance: new Cesium.NearFarScalar(2000000, 1, 8000000, 0.1) // 根据相机距离缩放
     }
     const entitie: any = dataSource.entities.add({
       id: item.id || `${layerName}_entityPoint_${i}`,
@@ -128,6 +131,13 @@ export function createEntityPointLayer(
         image: options.image || options.getImage(item),
         ...defaultOptions,
         ...options
+      },
+      label: {
+        show: !!options.labelStyle.text,
+        text: options.labelStyle.text || options.labelStyle.getText(item),
+        font: options.labelStyle.font || '12px sans-serif',
+        disableDepthTestDistance: Number.POSITIVE_INFINITY, // 禁止深度测试距离
+        ...options.labelStyle
       }
     })
     entitie._originStyle = { image: options.image || options.getImage(item), ...defaultOptions, ...options, color: Cesium.Color.WHITE }
@@ -247,6 +257,79 @@ export function customBaseLayer(viewer: Cesium.Viewer, layerName: string, option
   ;(layer as any)._layerName = layerName
   viewer.imageryLayers.addImageryProvider(layer)
   return layer
+}
+
+/**
+ * 创建覆盖物图层
+ * @param viewer 地图实例
+ * @param layerName 图层名称
+ * @param options 图层配置
+ * @returns {OverlayResult}
+ */
+export function createOverlay(viewer: Cesium.Viewer, layerName: string): OverlayResult {
+  const div = document.createElement('div')
+  div.classList.add(`jgis-overlay-3d ${layerName}-overlay`)
+  div.style.position = 'absolute'
+  document.body.appendChild(div)
+  return {
+    viewer,
+    element: div,
+    setPosition: (position: Cesium.Cartesian3) => {
+      const cartographic = Cesium.Cartographic.fromCartesian(position)
+      const height = viewer.scene.globe.getHeight(cartographic)
+      const ellipsoid = viewer.scene.globe.ellipsoid
+      const cartographic1 = new Cesium.Cartographic(cartographic.longitude, cartographic.latitude, height + 10)
+      const position1 = ellipsoid.cartographicToCartesian(cartographic1)
+      const center3D = viewer.scene.camera.pickEllipsoid(position1, ellipsoid)
+      if (center3D) {
+        const center2D = viewer.scene.cartesianToCanvasCoordinates(center3D)
+        if (Cesium.defined(center2D)) {
+          div.style.left = `${center2D.x}px`
+          div.style.top = `${center2D.y}px`
+        }
+      }
+    }
+  }
+}
+
+/**
+ * 获取所有图层
+ * @param viewer 视图
+ * @returns {Array<Cesium.Primitive | Cesium.DataSource>} 图层列表
+ */
+export function getAllLayer(viewer: Cesium.Viewer): Array<Cesium.Primitive | Cesium.DataSource> {
+  const primitives = viewer.scene.primitives
+  const dataSources = viewer.dataSources
+
+  const layers: Array<Cesium.Primitive | Cesium.DataSource> = [...primitives, ...dataSources]
+
+  return layers
+}
+
+/**
+ * 加载3DTile图层
+ * @param viewer 视图
+ * @param layerName 图层名称
+ * @param options 配置
+ * @returns {Promise<Cesium.Cesium3DTileset>} 3D图层
+ */
+export function create3DTileLayer(
+  viewer: Cesium.Viewer,
+  layerName: string,
+  options: Cesium.Cesium3DTileset.ConstructorOptions & { url: string }
+): Promise<Cesium.Cesium3DTileset> {
+  const tileset = Cesium.Cesium3DTileset.fromUrl(options.url, options)
+  ;(tileset as any)._layerName = layerName
+
+  tileset
+    .then(function (tileset) {
+      viewer.scene.primitives.add(tileset)
+      viewer.zoomTo(tileset)
+    })
+    .catch(function (error) {
+      console.log(error)
+    })
+  return tileset
 }
 
 /**

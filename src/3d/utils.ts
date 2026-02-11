@@ -1,3 +1,5 @@
+import * as Cesium from 'cesium'
+
 export function getCenterOfPoints(points: [number, number][]): [number, number] {
   const x = points.map((p) => p[0]).reduce((a, b) => a + b, 0) / points.length
   const y = points.map((p) => p[1]).reduce((a, b) => a + b, 0) / points.length
@@ -25,6 +27,17 @@ export function getsdfg(viewer: any, pickedObj: any) {
   // 计算屏幕位置
   const screenPosition = viewer.scene.cartesianToCanvasCoordinates(infoPosition)
   return screenPosition
+}
+
+export function formatPositon(position) {
+  const carto = Cesium.Cartographic.fromCartesian(position)
+  const result = {
+    x: Number(Cesium.Math.toDegrees(carto.longitude).toFixed(6)),
+    y: Number(Cesium.Math.toDegrees(carto.latitude).toFixed(6)),
+    z: Number(carto.height.toFixed(1))
+  }
+
+  return result
 }
 
 type dataType = { lttd?: number; lgtd?: number } & { jd?: number; wd?: number } & {

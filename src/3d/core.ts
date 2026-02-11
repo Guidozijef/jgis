@@ -1,8 +1,8 @@
 import * as Cesium from 'cesium'
-import { billboardOptions, Coordinates, flyOptions, mapConfigOptions, optionsMap } from './types'
+import { billboardOptions, Coordinates, flyOptions, mapConfigOptions, optionsMap, CameraInfo, Coordinates2, Extent, Bounds } from './types'
 import { createLayer, getLayerByName } from './layer'
 import { unregisterMap } from './store'
-import { getLonLat } from './utils'
+import { formatPositon, getLonLat } from './utils'
 
 /**
  * 创建Viewer
@@ -54,6 +54,7 @@ export function createViewer(el: string, options: Omit<mapConfigOptions, 'baseLa
   viewer.scene.screenSpaceCameraController.minimumZoomDistance = options.minZoom || 1 // 设置相机的高度的最小值
   viewer.scene.screenSpaceCameraController.maximumZoomDistance = options.maxZoom || 10000000 // 设置相机的高度的最大值
   viewer.resolutionScale = window.devicePixelRatio > 2 ? 2 : window.devicePixelRatio
+  viewer.scene.debugShowFramesPerSecond = options.showFrameRate === true // 显示帧率
   return viewer
 }
 
@@ -126,6 +127,191 @@ export function flyToBoundingSphere(viewer: Cesium.Viewer, boundingSphere: Cesiu
       }
     })
   })
+}
+
+// 0、常用的坐标系
+// 笛卡尔坐标：new Cesium.Cartesian3(x, y, z)  443621.9353276883
+// 弧度坐标：new Cesium.Cartographic(longitude, latitude, height) -1.657287975770561
+// 经纬度： Cesium.Cartesian3.fromDegrees(longitude, latitude, height)  120
+
+// 1、heading、pitch、roll
+// 偏航（heading），即机头朝左右摇摆
+// 俯仰(pitch)，机头上下摇摆
+// 滚转(roll)，机身绕中轴线旋转
+
+// 2、角度转弧度互相转换
+// 【1】角度转弧度：var radius = Cesium.Math.toRadians(90);
+// 【2】弧度转角度：var angle = Cesium.Math.toDegrees(1.5707963267948966);
+
+function pickCenterPoint(scene) {
+  var canvas = scene.canvas
+  var center = new Cesium.Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2)
+
+  var ray = scene.camera.getPickRay(center)
+  var target = scene.globe.pick(ray, scene)
+  return target || scene.camera.pickEllipsoid(center)
+}
+
+/**
+ * 获取中心点
+ * @param viewer 视图对象
+ * @returns
+ */
+export function getCenter(viewer: Cesium.Viewer): Omit<Coordinates2, 'lng' | 'lat'> {
+  const scene = viewer.scene
+  const target = pickCenterPoint(scene)
+  let bestTarget = target
+  if (!bestTarget) {
+    const globe = scene.globe
+    const carto = scene.camera.positionCartographic.clone()
+    const height = globe.getHeight(carto)
+    carto.height = height || 0
+    bestTarget = Cesium.Ellipsoid.WGS84.cartographicToCartesian(carto)
+  }
+
+  const result = formatPositon(bestTarget)
+
+  // 获取地球中心点世界位置  与  摄像机的世界位置  之间的距离
+  const distance = Cesium.Cartesian3.distance(bestTarget, viewer.scene.camera.positionWC)
+
+  return { ...result, cameraZ: distance }
+}
+
+/**
+ * 提取地球视域边界
+ * @param {Cesium.Viewer} viewer
+ * */
+export function getExtent(viewer: Cesium.Viewer): Extent {
+  // 范围对象
+  const extent = {
+    minX: 70,
+    maxX: 140,
+    minY: 0,
+    maxY: 55
+  } //默认值：中国区域
+
+  // 得到当前三维场景
+  const scene = viewer.scene
+
+  // 得到当前三维场景的椭球体
+  const ellipsoid = scene.globe.ellipsoid
+  const canvas = scene.canvas
+
+  // canvas左上角
+  const car3_lt = viewer.camera.pickEllipsoid(new Cesium.Cartesian2(0, 0), ellipsoid)
+  if (car3_lt) {
+    // 在椭球体上
+    const carto_lt = ellipsoid.cartesianToCartographic(car3_lt)
+    extent.minX = Cesium.Math.toDegrees(carto_lt.longitude)
+    extent.maxY = Cesium.Math.toDegrees(carto_lt.latitude)
+  } else {
+    // 不在椭球体上
+    const xMax = canvas.width / 2
+    const yMax = canvas.height / 2
+
+    let car3_lt2
+    // 这里每次10像素递加，一是10像素相差不大，二是为了提高程序运行效率
+    for (let yIdx = 0; yIdx <= yMax; yIdx += 10) {
+      const xIdx = yIdx <= xMax ? yIdx : xMax
+      car3_lt2 = viewer.camera.pickEllipsoid(new Cesium.Cartesian2(xIdx, yIdx), ellipsoid)
+      if (car3_lt2) break
+    }
+    if (car3_lt2) {
+      const carto_lt = ellipsoid.cartesianToCartographic(car3_lt2)
+      extent.minX = Cesium.Math.toDegrees(carto_lt.longitude)
+      extent.maxY = Cesium.Math.toDegrees(carto_lt.latitude)
+    }
+  }
+
+  // canvas右下角
+  const car3_rb = viewer.camera.pickEllipsoid(new Cesium.Cartesian2(canvas.width, canvas.height), ellipsoid)
+  if (car3_rb) {
+    // 在椭球体上
+    const carto_rb = ellipsoid.cartesianToCartographic(car3_rb)
+    extent.maxX = Cesium.Math.toDegrees(carto_rb.longitude)
+    extent.minY = Cesium.Math.toDegrees(carto_rb.latitude)
+  } else {
+    // 不在椭球体上
+    const xMax = canvas.width / 2
+    const yMax = canvas.height / 2
+
+    let car3_rb2
+    // 这里每次10像素递减，一是10像素相差不大，二是为了提高程序运行效率
+    for (let yIdx = canvas.height; yIdx >= yMax; yIdx -= 10) {
+      const xIdx = yIdx >= xMax ? yIdx : xMax
+      car3_rb2 = viewer.camera.pickEllipsoid(new Cesium.Cartesian2(xIdx, yIdx), ellipsoid)
+      if (car3_rb2) break
+    }
+    if (car3_rb2) {
+      const carto_rb = ellipsoid.cartesianToCartographic(car3_rb2)
+      extent.maxX = Cesium.Math.toDegrees(carto_rb.longitude)
+      extent.minY = Cesium.Math.toDegrees(carto_rb.latitude)
+    }
+  }
+
+  //交换
+  if (extent.maxX < extent.minX) {
+    const temp = extent.maxX
+    extent.maxX = extent.minX
+    extent.minX = temp
+  }
+  if (extent.maxY < extent.minY) {
+    const temp = extent.maxY
+    extent.maxY = extent.minY
+    extent.minY = temp
+  }
+
+  return extent
+}
+
+/**
+ * 提取视域边界
+ * @param {Cesium.Viewer} viewer
+ * @return {Bounds} 视域边界对象，包含西南角和东北角的经纬度坐标
+ * */
+export function getViewBounds(viewer: Cesium.Viewer): Bounds {
+  const rectangle = viewer.camera.computeViewRectangle()
+  // 弧度转为经纬度，west为左（西）侧边界的经度，以下类推
+  const west = (rectangle.west / Math.PI) * 180
+  const north = (rectangle.north / Math.PI) * 180
+  const east = (rectangle.east / Math.PI) * 180
+  const south = (rectangle.south / Math.PI) * 180
+  const bounds = {
+    southwest: {
+      lng: west,
+      lat: south
+    },
+    northeast: {
+      lng: east,
+      lat: north
+    }
+  }
+  return bounds
+}
+
+/**
+ * 获取视角信息
+ * @param viewer 视图对象
+ */
+export function getCameraView(viewer: Cesium.Viewer): CameraInfo {
+  const ellipsoid = viewer.scene.globe.ellipsoid
+  const cameraPosition = viewer.camera.position
+  const cartographic = ellipsoid.cartesianToCartographic(cameraPosition)
+  const longitude = Cesium.Math.toDegrees(cartographic.longitude)
+  const latitude = Cesium.Math.toDegrees(cartographic.latitude)
+  const height = cartographic.height
+  const heading = Cesium.Math.toDegrees(viewer.camera.heading)
+  const pitch = Cesium.Math.toDegrees(viewer.camera.pitch)
+  const roll = Cesium.Math.toDegrees(viewer.camera.roll)
+
+  return {
+    longitude,
+    latitude,
+    height,
+    heading,
+    pitch,
+    roll
+  }
 }
 
 /**
