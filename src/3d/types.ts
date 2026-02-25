@@ -113,6 +113,20 @@ export type Bounds = {
   northeast: Pick<Coordinates2, 'lng' | 'lat'>
 }
 
+// 定义你的映射关系
+type WeatherMap = {
+  rain: '雨'
+  snow: '雪'
+  fog: '雾'
+}
+
+// 封装一个工具类型将 Record 转换为 { type, name } 的联合
+type MapToUnion<T> = {
+  [K in keyof T]: { type: K; name: T[K] }
+}[keyof T]
+
+export type WeatherType = MapToUnion<WeatherMap>
+
 export type mapType = 'ver' | 'img' | 'ter'
 
 export type Asyncify<T> = {
@@ -128,8 +142,12 @@ export interface MapContext {
   getInstance: () => Cesium.Viewer
   addMarker: (layerName: string, data: Record<string, any>, options: optionsMap['Point']) => void
   createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }) => Cesium.Primitive
-  setBaseLayer: (mapType: mapType, options?: { token?: string }) => void
+  setBaseLayer: (options?: { token?: string; mapType: mapType }) => void
   customBaseLayer: (layerName: string, options: { url: string }) => void
+  create3DTileLayer: (
+    layerName: string,
+    options: Cesium.Cesium3DTileset.ConstructorOptions & { url: string; isFlyTo?: boolean }
+  ) => Promise<Cesium.Cesium3DTileset>
   removeLayer: (layerName: string) => void
   visibleLayer: (layerName: string, visible: boolean) => void
   getLayerByName: (layerName: string) => Cesium.BillboardCollection | Cesium.EntityCollection
@@ -145,6 +163,7 @@ export interface MapContext {
   getCenter: () => Omit<Coordinates2, 'lng' | 'lat'>
   getExtent: () => Extent
   getViewBounds: () => Bounds
+  setWeather: (options: WeatherType) => { destroy: () => void; changeOptions: (options: WeatherType) => void }
   setView: (coordinate: Coordinates, options?: flyOptions) => void
   destroyMap: (id: string) => void
 }

@@ -316,15 +316,15 @@ export function getAllLayer(viewer: Cesium.Viewer): Array<Cesium.Primitive | Ces
 export function create3DTileLayer(
   viewer: Cesium.Viewer,
   layerName: string,
-  options: Cesium.Cesium3DTileset.ConstructorOptions & { url: string }
+  options: Cesium.Cesium3DTileset.ConstructorOptions & { url: string; isFlyTo?: boolean }
 ): Promise<Cesium.Cesium3DTileset> {
-  const tileset = Cesium.Cesium3DTileset.fromUrl(options.url, options)
+  const tileset = Cesium.Cesium3DTileset.fromUrl(options.url, options as Omit<Cesium.Cesium3DTileset.ConstructorOptions, 'url' | 'isFlyTo'>)
   ;(tileset as any)._layerName = layerName
 
   tileset
     .then(function (tileset) {
       viewer.scene.primitives.add(tileset)
-      viewer.zoomTo(tileset)
+      options.isFlyTo && viewer.zoomTo(tileset)
     })
     .catch(function (error) {
       console.log(error)

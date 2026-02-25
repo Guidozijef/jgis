@@ -1,8 +1,20 @@
 import * as Cesium from 'cesium'
-import { billboardOptions, Coordinates, flyOptions, mapConfigOptions, optionsMap, CameraInfo, Coordinates2, Extent, Bounds } from './types'
+import {
+  billboardOptions,
+  Coordinates,
+  flyOptions,
+  mapConfigOptions,
+  optionsMap,
+  CameraInfo,
+  Coordinates2,
+  Extent,
+  Bounds,
+  WeatherType
+} from './types'
 import { createLayer, getLayerByName } from './layer'
 import { unregisterMap } from './store'
 import { formatPositon, getLonLat } from './utils'
+import WeatherEffects from './weatherEffects'
 
 /**
  * 创建Viewer
@@ -127,6 +139,24 @@ export function flyToBoundingSphere(viewer: Cesium.Viewer, boundingSphere: Cesiu
       }
     })
   })
+}
+
+/**
+ * 设置天气效果
+ * @param { Cesium.Viewer } viewer 视图
+ * @param { WaterType } options 配置项
+ * @returns { destroy: Function, changeOptions: Function } 销毁函数，修改配置函数
+ */
+export function setWeather(viewer: Cesium.Viewer, options: WeatherType): { destroy: () => void; changeOptions: (options: WeatherType) => void } {
+  const weather = new WeatherEffects(viewer, options)
+  return {
+    destroy() {
+      weather.destroy()
+    },
+    changeOptions(options: WeatherType) {
+      weather.changeOptions(options)
+    }
+  }
 }
 
 // 0、常用的坐标系

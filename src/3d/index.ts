@@ -11,10 +11,21 @@ import {
   getCameraView,
   getCenter,
   getExtent,
-  getViewBounds
+  getViewBounds,
+  setWeather
 } from './core'
 import { createSelect, UseSelectResult, createHover, UseHoverResult, HoverOptions, SelectOptions } from './interaction'
-import { createBaseLayer, createBlankLayer, createLayer, createOverlay, customBaseLayer, getLayerByName, removeLayer, visibleLayer } from './layer'
+import {
+  createBaseLayer,
+  createBlankLayer,
+  createLayer,
+  createOverlay,
+  customBaseLayer,
+  create3DTileLayer,
+  getLayerByName,
+  removeLayer,
+  visibleLayer
+} from './layer'
 import {
   Asyncify,
   billboardOptions,
@@ -29,7 +40,8 @@ import {
   MapContext,
   mapType,
   optionsMap,
-  OverlayResult
+  OverlayResult,
+  WeatherType
 } from './types'
 import { getMapContext as getMapContexted, getMapContextAsync as getMapContextAsynced, onMapReady as onMapReadyed, registerMap } from './store'
 import { setBaseLayer } from './baseMap'
@@ -54,16 +66,20 @@ export function useMap(el: string, options: mapConfigOptions): MapContext {
     createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }): Cesium.Primitive =>
       createLayer(viewer, layerName, data, options),
     removeLayer: (layerName: string) => removeLayer(viewer, layerName),
-    setBaseLayer: (mapType: mapType, options?: { token?: string }) => setBaseLayer(viewer, mapType, options),
+    setBaseLayer: (options?: { token?: string; mapType: mapType }) => setBaseLayer(viewer, options),
     customBaseLayer: (layerName: string, options: { url: string }) => customBaseLayer(viewer, layerName, options),
+    create3DTileLayer: (
+      layerName: string,
+      options: Cesium.Cesium3DTileset.ConstructorOptions & { url: string; isFlyTo?: boolean }
+    ): Promise<Cesium.Cesium3DTileset> => create3DTileLayer(viewer, layerName, options),
     visibleLayer: (layerName: string, visible: boolean) => visibleLayer(viewer, layerName, visible),
     getLayerByName: (layerName: string): Cesium.BillboardCollection | Cesium.EntityCollection => getLayerByName(viewer, layerName),
     findGraphic: (layerName: string, data: Record<string, any>, tolerance?: number): Cesium.Billboard | Cesium.Entity =>
       findGraphic(viewer, layerName, data, tolerance),
     createBlankLayer: (layerName: string): Cesium.Primitive => createBlankLayer(viewer, layerName),
     createSelect: (options: SelectOptions): UseSelectResult => createSelect(viewer, options),
-    createOverlay: (layerName: string): OverlayResult => createOverlay(viewer, layerName),
     createHover: (options: HoverOptions): UseHoverResult => createHover(viewer, options),
+    createOverlay: (layerName: string): OverlayResult => createOverlay(viewer, layerName),
     flyTo: (coordinate: Coordinates, options?: flyOptions): Promise<boolean> => flyTo(viewer, coordinate, options),
     flyHome: (duration?: number): void => flyHome(viewer, duration),
     flyToBoundingSphere: (boundingSphere: Cesium.BoundingSphere, options?: flyOptions): Promise<boolean> =>
@@ -72,6 +88,7 @@ export function useMap(el: string, options: mapConfigOptions): MapContext {
     getCenter: (): Omit<Coordinates2, 'lng' | 'lat'> => getCenter(viewer),
     getExtent: (): Extent => getExtent(viewer),
     getViewBounds: (): Bounds => getViewBounds(viewer),
+    setWeather: (options: WeatherType): { destroy: () => void; changeOptions: (options: WeatherType) => void } => setWeather(viewer, options),
     setView: (coordinate: Coordinates, options?: flyOptions): void => setView(viewer, coordinate, options),
     destroyMap: (id: string): void => destroyMap(viewer, id)
   }
