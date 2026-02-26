@@ -41,7 +41,7 @@ export function createBaseLayer(map: Map, options: BaseLayerOptions = {}): TileL
     vec: ['vec', 'cva'],
     ter: ['ter', 'cta']
   }
-  const baseType = baseTypeMap[options.baseType || 'vec']
+  const baseType = baseTypeMap[options.mapType || 'vec']
   const layer = new TileLayer({
     className: 'tdt-base-layer',
     source: new XYZ({

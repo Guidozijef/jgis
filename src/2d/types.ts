@@ -31,7 +31,7 @@ export interface BaseLayerOptions {
   maxZoom?: number
   minZoom?: number
   zIndex?: number
-  baseType?: mapType
+  mapType?: mapType
 }
 
 export interface mapConfigOptions {

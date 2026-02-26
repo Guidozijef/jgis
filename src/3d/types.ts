@@ -11,8 +11,7 @@ export interface flyOptions {
 
 export interface BaseLayerOptions {
   token?: string
-  baseType?: string
-  noteType?: string
+  mapType?: string
 }
 
 export interface mapConfigOptions {
