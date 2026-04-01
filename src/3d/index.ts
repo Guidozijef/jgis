@@ -65,7 +65,7 @@ export function useMap(el: string, options: mapConfigOptions): MapContext {
       addMarker(viewer, layerName, points, options),
     createLayer: <K extends keyof optionsMap>(layerName: string, data: any, options?: optionsMap[K] & { type?: K }): Cesium.Primitive =>
       createLayer(viewer, layerName, data, options),
-    removeLayer: (layerName: string) => removeLayer(viewer, layerName),
+    removeLayer: (layerName: string | string[]) => removeLayer(viewer, layerName),
     setBaseLayer: (options?: { token?: string; mapType: mapType }) => setBaseLayer(viewer, options),
     customBaseLayer: (layerName: string, options: { url: string }) => customBaseLayer(viewer, layerName, options),
     create3DTileLayer: (

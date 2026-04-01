@@ -147,7 +147,7 @@ export interface MapContext {
     layerName: string,
     options: Cesium.Cesium3DTileset.ConstructorOptions & { url: string; isFlyTo?: boolean }
   ) => Promise<Cesium.Cesium3DTileset>
-  removeLayer: (layerName: string) => void
+  removeLayer: (layerName: string | string[]) => void
   visibleLayer: (layerName: string, visible: boolean) => void
   getLayerByName: (layerName: string) => Cesium.BillboardCollection | Cesium.EntityCollection
   createBlankLayer: (layerName: string, options: LayerOptions) => Cesium.Primitive
