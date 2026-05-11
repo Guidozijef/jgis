@@ -137,19 +137,6 @@ select.onSelect((res) => {
   }
 });
 
-
-// 监听回调
-select.onSelect((res) => {
-  if (res && res.length > 0) {
-    // res 是一个数组，包含 feature, layer 和 properties
-    const item = res[0];
-    console.log('选中要素属性:', item.properties);
-    console.log('所属图层:', item.layer);
-  } else {
-    console.log('取消选中');
-  }
-});
-
 const { onHover } = createHover({
   style: new Style({
     stroke: new Stroke({ color: 'blue', width: 3 }),
